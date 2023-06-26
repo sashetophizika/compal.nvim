@@ -58,4 +58,8 @@ M.setup = function(opts)
     end
 end
 
-return M
+M.cmd = commands
+
+print(vim.inspect(commands))
+--return M
+return 4
