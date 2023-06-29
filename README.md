@@ -98,25 +98,25 @@ Any missing language can be added when calling `setup()` using given format.
 
 |Language | Normal | Interactive
 |---------|--------|-----------
-|bash| cd = "", cmd = "bash %f"| repl = nil, title = "", cmd = ""
-|c| cd = "cd %g;", cmd = "make"| repl = nil, title = "", cmd = ""
-|cpp| cd = "cd %g;", cmd = "make"| repl = nil, title = "", cmd = ""
-|cs| cd = "cd %g;", cmd = "dotnet run"| repl = nil, title = "", cmd = ""
-|clojure| cd = "", cmd = "clj -M %f"| repl = "clj", title = "clj", cmd = 'load-file "%f"'
-|dart| cd = "cd %g;", cmd = "dart run"| repl = nil, title = "", cmd = ""
-|elixir| cd = "cd %g", cmd = "mix compile"| repl = "iex -S mix", title = "beam.smp", cmd = "recompile()"
-|go| cd = "cd %g;", cmd = "go run ."| repl = nil, title = "", cmd = ""
-|haskell| cd = "cd %g;", cmd = "cabal run"| repl = "ghci", title = "ghc", cmd = ":l %f"
-|java| cd = "", cmd = "javac %f"| repl = nil, title = "", cmd = ""
-|javascript| cd = "", cmd = "node %f"| repl = nil, title = "", cmd = ""
-|julia| cd = "", cmd = "julia %f"| repl = "julia", title = "julia", cmd = 'include("%f")'
-|kotlin| cd = "", cmd = "kotlinc %f"| repl = nil, title = "", cmd = ""
-|lua| cd = "", cmd = "lua %f"| repl = "lua", title = "lua", cmd = 'require("%f")'
-|php| cd = "", cmd = "php %f"| repl = nil, title = "", cmd = ""
-|python| cd = "", cmd = "python %f"| repl = "python", title = "python", cmd = "import %s"
-|ruby| cd = "", cmd = "ruby %f"| repl = "irb", title = "irb", cmd = 'require "%f"'
-|rust| cd = "cd %g;", cmd = "cargo run"| repl = nil, title = "", cmd = ""
-|tex| cd = "", cmd = "pdflatex %f"| repl = nil, title = "", cmd = ""
-|typescript| cd = "", cmd = "npx tsc %f"| repl = nil, title = "", cmd = ""
-|zig| cd = "cd %g;", cmd = "zig build run" | repl = nil, title = "", cmd = ""
+|`bash`|` cd = "", cmd = "bash %f"`|` repl = nil, title = "", cmd = ""`
+|`c`|` cd = "cd %g;", cmd = "make"`|` repl = nil, title = "", cmd = ""`
+|`cpp`|` cd = "cd %g;", cmd = "make"`|` repl = nil, title = "", cmd = ""`
+|`cs`|` cd = "cd %g;", cmd = "dotnet run"`|` repl = nil, title = "", cmd = ""`
+|`clojure`|` cd = "", cmd = "clj -M %f"`|` repl = "clj", title = "clj", cmd = 'load-file "%f"'`
+|`dart`|` cd = "cd %g;", cmd = "dart run"`|` repl = nil, title = "", cmd = ""`
+|`elixir`|` cd = "cd %g", cmd = "mix compile"`|` repl = "iex -S mix", title = "beam.smp", cmd = "recompile()"`
+|`go`|` cd = "cd %g;", cmd = "go run ."`|` repl = nil, title = "", cmd = ""`
+|`haskell`|` cd = "cd %g;", cmd = "cabal run"`|` repl = "ghci", title = "ghc", cmd = ":l %f"`
+java`|` cd = "", cmd = "javac %f"`|` repl = nil, title = "", cmd = ""`
+|`javascript`|` cd = "", cmd = "node %f"`|` repl = nil, title = "", cmd = ""`
+|`julia`|` cd = "", cmd = "julia %f"`|` repl = "julia", title = "julia", cmd = 'include("%f")'`
+|`kotlin`|` cd = "", cmd = "kotlinc %f"`|` repl = nil, title = "", cmd = ""`
+|`lua`|` cd = "", cmd = "lua %f"`|` repl = "lua", title = "lua", cmd = 'require("%f")'`
+|`php`|` cd = "", cmd = "php %f"`|` repl = nil, title = "", cmd = ""`
+|`python`|` cd = "", cmd = "python %f"`|` repl = "python", title = "python", cmd = "import %s"`
+|`ruby`|` cd = "", cmd = "ruby %f"`|` repl = "irb", title = "irb", cmd = 'require "%f"'`
+|`rust`|` cd = "cd %g;", cmd = "cargo run"`|` repl = nil, title = "", cmd = ""`
+|`tex`|` cd = "", cmd = "pdflatex %f"`|` repl = nil, title = "", cmd = ""`
+|`typescript`|` cd = "", cmd = "npx tsc %f"`|` repl = nil, title = "", cmd = ""`
+|`zig`|` cd = "cd %g;", cmd = "zig build run" `|` repl = nil, title = "", cmd = ""`
 
