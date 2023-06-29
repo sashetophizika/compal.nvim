@@ -5,8 +5,8 @@ local commands = {
         rust = { normal = {cd = "cd %g;", cmd = "cargo run"}, interactive = { repl = nil, title = "", cmd = ""}},
         cpp = { normal = {cd = "cd %g;", cmd = "make"}, interactive = { repl = nil, title = "", cmd = ""}},
         julia = { normal = {cd = "", cmd = "julia %f"}, interactive = { repl = "julia", title = "julia", cmd = 'include("%f")'}},
-        python = { normal = {cd = "", cmd = "python %f"}, interactive = { repl = "ipython", title = "python", cmd = "%run %f"}},
-        bash = { normal = {cd = "", cmd = "./%f"}, interactive = { repl = "bash", title = "bash", cmd = "./%f"}},
+        python = { normal = {cd = "", cmd = "python %f"}, interactive = { repl = "python", title = "python", cmd = "import %s"}},
+        bash = { normal = {cd = "", cmd = "bash %f"}, interactive = { repl = nil, title = "", cmd = ""}},
         cs = { normal = {cd = "cd %g;", cmd = "dotnet run"}, interactive = { repl = nil, title = "", cmd = ""}},
         php = { normal = {cd = "", cmd = "php %f"}, interactive = { repl = nil, title = "", cmd = ""}},
         haskell = { normal = {cd = "cd %g", cmd = "cabal run"}, interactive = { repl = "ghci", title = "ghc", cmd = ":l %f"}},
@@ -20,8 +20,8 @@ local commands = {
         typescript = { normal = {cd = "", cmd = "npx tsc %f"}, interactive = { repl = nil, title = "", cmd = ""}},
         elixir = { normal = {cd = "cd %g;", cmd = "mix compile"}, interactive = { repl = "iex -S mix", title = "beam.smp", cmd = "recompile()"}},
         clojure = { normal = {cd = "", cmd = "clj -M %f"}, interactive = { repl = "clj", title = "clj", cmd = '(load-file "%f")'}},
-        go = { normal = {cd = "cd %g;", cmd = "go run ."}, interactive = { repl = "", title = "", cmd = ""}},
-        dart = { normal = {cd = "cd %g;", cmd = "dart run"}, interactive = { repl = "", title = "", cmd = ""}},
+        go = { normal = {cd = "cd %g;", cmd = "go run ."}, interactive = { repl = nil, title = "", cmd = ""}},
+        dart = { normal = {cd = "cd %g;", cmd = "dart run"}, interactive = { repl = nil, title = "", cmd = ""}},
     split = "tmux split -v",
     save = true,
     focus_shell = true,
@@ -29,11 +29,11 @@ local commands = {
     override_shell = true
 }
 
-function parse_wildcards(str)
+local function parse_wildcards(str)
     local pre_git = str:gsub("%%f", vim.fn.expand("%:p")):gsub("%%s", vim.fn.expand("%:p:r"))
     local git_root = vim.fn.system("git rev-parse --show-toplevel")
 
-    if git_root:gmatch("fatal:")() == nil then 
+    if git_root:gmatch("fatal:")() == nil then
         pre_git = pre_git:gsub("%%g", git_root:sub(0, -2))
     end
 
@@ -57,14 +57,14 @@ M.compile_normal = function(args)
     end
 
     if os.getenv("TMUX") then
-        local sh_pane = vim.fn.system("tmux list-panes -F '#{pane_index} #{pane_current_command}' | rg -e bash -e zsh -e sh")
+        local sh_pane = vim.fn.system("tmux list-panes -F '#{pane_index} #{pane_current_command}' | rg sh")
         local pane_index
 
         if sh_pane == "" then
             pane_index = tonumber(vim.fn.system("tmux display-message -p '#{pane_index}'")) + 1
-            vim.fn.system(string.format("%s", M.cmd.split))
+            vim.fn.system(M.cmd.split)
         else
-            pane_index = string.gmatch(sh_pane, "%w+")()
+            pane_index = sh_pane:gmatch("%w+")()
             vim.fn.system("tmux select-pane -t " .. pane_index)
         end
 
@@ -89,13 +89,14 @@ M.compile_interactive = function(args)
         local pane_index
 
         if sh_pane ~= "" then
-            pane_index = string.gmatch(sh_pane, "%w+")()
+            pane_index = sh_pane:gmatch("%w+")()
             vim.fn.system("tmux select-pane -t " .. pane_index)
         else
             if M.cmd.override_shell then
-                local sh_present = vim.fn.system("tmux list-panes -F '#{pane_index} #{pane_current_command}' | rg -e bash -e zsh -e sh")
+                local sh_present = vim.fn.system("tmux list-panes -F '#{pane_index} #{pane_current_command}' | rg sh")
+
                 if sh_present ~= "" then
-                    pane_index = string.gmatch(sh_present, "%w+")()
+                    pane_index = sh_present:gmatch("%w+")()
                     vim.fn.system("tmux select-pane -t " .. pane_index)
                     vim.fn.system(string.format("tmux send-keys C-z '%s' Enter", M.cmd[ft].interactive.repl))
                 else
