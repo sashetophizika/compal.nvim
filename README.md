@@ -10,10 +10,6 @@ Using [packer](https://github.com/wbthomason/packer.nvim)
 ```
 use 'sasheto-phizika/vim-compiler.nvim'
 ```
-Using [lazy](https://github.com/folke/lazy.nvim)
-```
-Plug 'sasheto-phizika/vim-compiler.nvim'
-```
 
 ## Basic Usage
 The plugin provides 4 functions that execute commands based on the filetype defined by `vim.bo.filetype`. Modifications to filetype detection can be made with [`vim.filetype.add`](https://neovim.io/doc/user/lua.html#lua-filetype).
@@ -22,7 +18,7 @@ The plugin provides 4 functions that execute commands based on the filetype defi
 
 `compile_normal`: Runs the command in the first shell pane in the window or if there are none, spawns a shell pane and runs there. Requires an attached tmux session.
 
-`compile_interactive`: For languages that provide a repl, works like `compile_normal` but it uses the repl instead of the shell. Also overrides existing shell panes by default.
+`compile_interactive`: For languages that provide a repl, works like `compile_normal` but it uses the corresponding repl instead of the shell. Also overrides existing shell panes by default.
 
 `compile_smart`: Defaults to `compile_interactive`, with `compile_normal` as fallback if filetype doesn't have a repl and `compile_vim` as fallback if neovim isn't running inside tmux.
 
@@ -40,7 +36,6 @@ For programs that take arguments, there is the `VimCompiler [smart | interactive
 ```lua
 vim.keymap.set("n", "<leader>ed", ":VimCompiler smart")
 ```
-_
 
 ## Configuration
 ### Language Configuration
@@ -125,5 +120,5 @@ Any missing language can be added when calling `setup()` using the given format.
 |`rust`|`cd = "cd %g;", cmd = "cargo run"`|`repl = nil, title = "", cmd = ""`
 |`tex`|`cd = "", cmd = "pdflatex %f"`|`repl = nil, title = "", cmd = ""`
 |`typescript`|`cd = "", cmd = "npx tsc %f"`|`repl = nil, title = "", cmd = ""`
-|`zig`|`cd = "cd %g;", cmd = "zig build run" `|`repl = nil, title = "", cmd = ""`
+|`zig`|`cd = "cd %g;", cmd = "zig build run"`|`repl = nil, title = "", cmd = ""`
 
