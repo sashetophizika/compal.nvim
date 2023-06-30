@@ -5,21 +5,21 @@ local commands = {
         rust = { normal = {cd = "cd %g;", cmd = "cargo run"}, interactive = { repl = nil, title = "", cmd = ""}},
         cpp = { normal = {cd = "cd %g;", cmd = "make"}, interactive = { repl = nil, title = "", cmd = ""}},
         julia = { normal = {cd = "", cmd = "julia %f"}, interactive = { repl = "julia", title = "julia", cmd = 'include("%f")'}},
-        python = { normal = {cd = "", cmd = "python %f"}, interactive = { repl = "python", title = "python", cmd = "import %s"}},
+        python = { normal = {cd = "", cmd = "python %f"}, interactive = { repl = "ipython", title = "python", cmd = "%run %f"}},
         bash = { normal = {cd = "", cmd = "bash %f"}, interactive = { repl = nil, title = "", cmd = ""}},
         cs = { normal = {cd = "cd %g;", cmd = "dotnet run"}, interactive = { repl = nil, title = "", cmd = ""}},
         php = { normal = {cd = "", cmd = "php %f"}, interactive = { repl = nil, title = "", cmd = ""}},
         haskell = { normal = {cd = "cd %g", cmd = "cabal run"}, interactive = { repl = "ghci", title = "ghc", cmd = ":l %f"}},
         lua = { normal = {cd = "", cmd = "lua %f"}, interactive = { repl = "lua", title = "lua", cmd = "require('%f')"}},
         java = { normal = {cd = "", cmd = "javac %f"}, interactive = { repl = nil, title = "", cmd = ""}},
-        javascript = { normal = {cd = "", cmd = "node %f"}, interactive = { repl = "", title = "", cmd = ""}},
+        javascript = { normal = {cd = "", cmd = "node %f"}, interactive = { repl = nil, title = "", cmd = ""}},
         ruby = { normal = {cd = "", cmd = "ruby %f"}, interactive = { repl = "irb", title = "irb", cmd = 'require "%f"'}},
         tex = { normal = {cd = "", cmd = "pdflatex %f"}, interactive = { repl = nil, title = "", cmd = ""}},
         kotlin = { normal = {cd = "", cmd = "kotlinc %f"}, interactive = { repl = nil, title = "", cmd = ""}},
         zig = { normal = {cd = "cd %g;", cmd = "zig build run"}, interactive = { repl = nil, title = "", cmd = ""}},
         typescript = { normal = {cd = "", cmd = "npx tsc %f"}, interactive = { repl = nil, title = "", cmd = ""}},
         elixir = { normal = {cd = "cd %g;", cmd = "mix compile"}, interactive = { repl = "iex -S mix", title = "beam.smp", cmd = "recompile()"}},
-        clojure = { normal = {cd = "", cmd = "clj -M %f"}, interactive = { repl = "clj", title = "clj", cmd = '(load-file "%f")'}},
+        clojure = { normal = {cd = "", cmd = "clj -M %f"}, interactive = { repl = "clj", title = "rlwrap", cmd = '(load-file "%f")'}},
         go = { normal = {cd = "cd %g;", cmd = "go run ."}, interactive = { repl = nil, title = "", cmd = ""}},
         dart = { normal = {cd = "cd %g;", cmd = "dart run"}, interactive = { repl = nil, title = "", cmd = ""}},
     split = "tmux split -v",
@@ -30,7 +30,7 @@ local commands = {
 }
 
 local function parse_wildcards(str)
-    local pre_git = str:gsub("%%f", vim.fn.expand("%:p")):gsub("%%s", vim.fn.expand("%:p:r"))
+    local pre_git = str:gsub("%%f", vim.fn.expand("%:p")):gsub("%%s", vim.fn.expand("%:p:r")):gsub("%%h", vim.fn.expand("%:p:h"))
     local git_root = vim.fn.system("git rev-parse --show-toplevel")
 
     if git_root:gmatch("fatal:")() == nil then
@@ -101,11 +101,11 @@ M.compile_interactive = function(args)
                     vim.fn.system(string.format("tmux send-keys C-z '%s' Enter", M.cmd[ft].interactive.repl))
                 else
                     pane_index = tonumber(vim.fn.system("tmux display-message -p '#{pane_index}'")) + 1
-                    vim.fn.system(M.cmd.split .. M.cmd[ft].interactive.repl)
+                    vim.fn.system(M.cmd.split .. " " .. M.cmd[ft].interactive.repl)
                 end
             else
                 pane_index = tonumber(vim.fn.system("tmux display-message -p '#{pane_index}'")) + 1
-                vim.fn.system(M.cmd.split .. M.cmd[ft].interactive.repl)
+                vim.fn.system(M.cmd.split .. " " .. M.cmd[ft].interactive.repl)
             end
         end
 

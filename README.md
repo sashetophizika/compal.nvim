@@ -61,7 +61,14 @@ filetype = {
 
 ```
 
-The `cmd` and `cd` options allow the use of some wildcards. `%f` is full path to current file, `%s` is the same as `%f` but with a truncated file extension and `%g` is the git root directory if it exists. The `interactive.title` field is there because of certain repls with a title different from the command like `ghci` where title is `ghc` and `ipython` where title is `python`.
+The `cmd` and `cd` options allow the use of some wildcards. The `interactive.title` field is there because of certain repls with a title different from the command like `ghci` where title is `ghc` and `ipython` where title is `python`.
+
+| Wildcard | Description
+|----------|------------|
+| `%f` | filename with full path
+| `%s` | filename with full path and truncated extension
+| `%h` | full path to parent directory of current buffer
+| `%g` | full path to git root directory if it exists
 
 ### Global Commands
 | Option | Default | Description
@@ -94,7 +101,7 @@ local vim_compiler = require("vim-compiler").setup({
 })
 ```
 ##  Default Language table
-Any missing language can be added when calling `setup()` using given format.
+Any missing language can be added when calling `setup()` using the given format.
 
 |Language | Normal | Interactive
 |---------|--------|-----------
@@ -113,7 +120,7 @@ Any missing language can be added when calling `setup()` using given format.
 |`kotlin`|`cd = "", cmd = "kotlinc %f"`|`repl = nil, title = "", cmd = ""`
 |`lua`|`cd = "", cmd = "lua %f"`|`repl = "lua", title = "lua", cmd = 'require("%f")'`
 |`php`|`cd = "", cmd = "php %f"`|`repl = nil, title = "", cmd = ""`
-|`python`|`cd = "", cmd = "python %f"`|`repl = "python", title = "python", cmd = "import %s"`
+|`python`|`cd = "", cmd = "python %f"`|`repl = "ipython", title = "python", cmd = "%run %f"`
 |`ruby`|`cd = "", cmd = "ruby %f"`|`repl = "irb", title = "irb", cmd = 'require "%f"'`
 |`rust`|`cd = "cd %g;", cmd = "cargo run"`|`repl = nil, title = "", cmd = ""`
 |`tex`|`cd = "", cmd = "pdflatex %f"`|`repl = nil, title = "", cmd = ""`
