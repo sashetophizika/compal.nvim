@@ -1,13 +1,13 @@
 # vim-compiler.nvim
-Set a keybinding to compile and run code in any language inside vim or a seperate tmux pane.
+Set a keybinding to compile and run code in any language inside nvim or a seperate tmux pane.
 
 ## Installation
 Using [Plug](https://github.com/junegunn/vim-plug)
-```
+```lua
 Plug('sasheto-phizika/vim-compiler.nvim')
 ```
 Using [packer](https://github.com/wbthomason/packer.nvim)
-```
+```lua
 use 'sasheto-phizika/vim-compiler.nvim'
 ```
 
