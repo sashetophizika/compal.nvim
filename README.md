@@ -29,20 +29,21 @@ The plugin provides 4 functions that execute commands based on the filetype defi
 Set keybindings inside `init.lua`
 
 ```lua
-local vim-compiler = require("vim-compiler").setup()
-vim.keymap.set("n", "<leader>ee", vim-compiler.compile_smart)
-vim.keymap.set("n", "<leader>er", vim-compiler.compile_interactive)
-vim.keymap.set("n", "<leader>ew", vim-compiler.compile_normal)
-vim.keymap.set("n", "<leader>ef", vim-compiler.compile_vim)
+local vim_compiler = require("vim-compiler").setup()
+vim.keymap.set("n", "<leader>ee", vim_compiler.compile_smart)
+vim.keymap.set("n", "<leader>er", vim_compiler.compile_interactive)
+vim.keymap.set("n", "<leader>ew", vim_compiler.compile_normal)
+vim.keymap.set("n", "<leader>ef", vim_compiler.compile_vim)
 ```
 For programs that take arguments, there is the `VimCompiler [smart | interactive | normal | vim] *args` command. For convenience, you can create a keybinding that enters command mode and autofills part of the command.
 
 ```lua
 vim.keymap.set("n", "<leader>ed", ":VimCompiler smart")
 ```
-
+_
 
 ## Configuration
+### Language Configuration
 The configuration for each language is a table of the form
 
 ```lua
@@ -51,7 +52,7 @@ filetype = {
             cmd = command_for_shell,
             cd = optional_cd_before_cmd,
         },
-        interactive {
+        interactive = {
             repl = command_to_launch_repl,
             cmd = command_to_load_file,
             title = tmux_pane_current_command,
@@ -62,10 +63,9 @@ filetype = {
 
 The `cmd` and `cd` options allow the use of some wildcards. `%f` is full path to current file, `%s` is the same as `%f` but with a truncated file extension and `%g` is the git root directory if it exists. The `interactive.title` field is there because of certain repls with a title different from the command like `ghci` where title is `ghc` and `ipython` where title is `python`.
 
-There are also the global options
-
+### Global Commands
 | Option | Default | Description
-|-------------------------------------|-------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|--------|---------|------------|
 | `split`                | `"tmux split -v"` | Command for creating the new pane
 | `save`                 |  `true`   | Whether to save before execution
 | `focus_shell`          |   `true`  | Whether to focus the shell after execution of `compile_normal`  
@@ -73,9 +73,9 @@ There are also the global options
 | `override_shell`       |   `true`  | Whether to execute repl command in an available shell pane for `compile_interactive`
 
 
-Example configuration
+### Example configuration
 ```lua
-local vim-compiler = require("vim-compiler").setup({
+local vim_compiler = require("vim-compiler").setup({
     python = {
         interactive = {
             repl = "ipython",
@@ -98,25 +98,25 @@ Any missing language can be added when calling `setup()` using given format.
 
 |Language | Normal | Interactive
 |---------|--------|-----------
-|`bash`|` cd = "", cmd = "bash %f"`|` repl = nil, title = "", cmd = ""`
-|`c`|` cd = "cd %g;", cmd = "make"`|` repl = nil, title = "", cmd = ""`
-|`cpp`|` cd = "cd %g;", cmd = "make"`|` repl = nil, title = "", cmd = ""`
-|`cs`|` cd = "cd %g;", cmd = "dotnet run"`|` repl = nil, title = "", cmd = ""`
-|`clojure`|` cd = "", cmd = "clj -M %f"`|` repl = "clj", title = "clj", cmd = 'load-file "%f"'`
-|`dart`|` cd = "cd %g;", cmd = "dart run"`|` repl = nil, title = "", cmd = ""`
-|`elixir`|` cd = "cd %g", cmd = "mix compile"`|` repl = "iex -S mix", title = "beam.smp", cmd = "recompile()"`
-|`go`|` cd = "cd %g;", cmd = "go run ."`|` repl = nil, title = "", cmd = ""`
-|`haskell`|` cd = "cd %g;", cmd = "cabal run"`|` repl = "ghci", title = "ghc", cmd = ":l %f"`
-java`|` cd = "", cmd = "javac %f"`|` repl = nil, title = "", cmd = ""`
-|`javascript`|` cd = "", cmd = "node %f"`|` repl = nil, title = "", cmd = ""`
-|`julia`|` cd = "", cmd = "julia %f"`|` repl = "julia", title = "julia", cmd = 'include("%f")'`
-|`kotlin`|` cd = "", cmd = "kotlinc %f"`|` repl = nil, title = "", cmd = ""`
-|`lua`|` cd = "", cmd = "lua %f"`|` repl = "lua", title = "lua", cmd = 'require("%f")'`
-|`php`|` cd = "", cmd = "php %f"`|` repl = nil, title = "", cmd = ""`
-|`python`|` cd = "", cmd = "python %f"`|` repl = "python", title = "python", cmd = "import %s"`
-|`ruby`|` cd = "", cmd = "ruby %f"`|` repl = "irb", title = "irb", cmd = 'require "%f"'`
-|`rust`|` cd = "cd %g;", cmd = "cargo run"`|` repl = nil, title = "", cmd = ""`
-|`tex`|` cd = "", cmd = "pdflatex %f"`|` repl = nil, title = "", cmd = ""`
-|`typescript`|` cd = "", cmd = "npx tsc %f"`|` repl = nil, title = "", cmd = ""`
-|`zig`|` cd = "cd %g;", cmd = "zig build run" `|` repl = nil, title = "", cmd = ""`
+|`bash`|`cd = "", cmd = "bash %f"`|`repl = nil, title = "", cmd = ""`
+|`c`|`cd = "cd %g;", cmd = "make"`|`repl = nil, title = "", cmd = ""`
+|`cpp`|`cd = "cd %g;", cmd = "make"`|`repl = nil, title = "", cmd = ""`
+|`cs`|`cd = "cd %g;", cmd = "dotnet run"`|`repl = nil, title = "", cmd = ""`
+|`clojure`|`cd = "", cmd = "clj -M %f"`|`repl = "clj", title = "clj", cmd = 'load-file "%f"'`
+|`dart`|`cd = "cd %g;", cmd = "dart run"`|`repl = nil, title = "", cmd = ""`
+|`elixir`|`cd = "cd %g", cmd = "mix compile"`|`repl = "iex -S mix", title = "beam.smp", cmd = "recompile()"`
+|`go`|`cd = "cd %g;", cmd = "go run ."`|`repl = nil, title = "", cmd = ""`
+|`haskell`|`cd = "cd %g;", cmd = "cabal run"`|`repl = "ghci", title = "ghc", cmd = ":l %f"`
+|`java`|`cd = "", cmd = "javac %f"`|`repl = nil, title = "", cmd = ""`
+|`javascript`|`cd = "", cmd = "node %f"`|`repl = nil, title = "", cmd = ""`
+|`julia`|`cd = "", cmd = "julia %f"`|`repl = "julia", title = "julia", cmd = 'include("%f")'`
+|`kotlin`|`cd = "", cmd = "kotlinc %f"`|`repl = nil, title = "", cmd = ""`
+|`lua`|`cd = "", cmd = "lua %f"`|`repl = "lua", title = "lua", cmd = 'require("%f")'`
+|`php`|`cd = "", cmd = "php %f"`|`repl = nil, title = "", cmd = ""`
+|`python`|`cd = "", cmd = "python %f"`|`repl = "python", title = "python", cmd = "import %s"`
+|`ruby`|`cd = "", cmd = "ruby %f"`|`repl = "irb", title = "irb", cmd = 'require "%f"'`
+|`rust`|`cd = "cd %g;", cmd = "cargo run"`|`repl = nil, title = "", cmd = ""`
+|`tex`|`cd = "", cmd = "pdflatex %f"`|`repl = nil, title = "", cmd = ""`
+|`typescript`|`cd = "", cmd = "npx tsc %f"`|`repl = nil, title = "", cmd = ""`
+|`zig`|`cd = "cd %g;", cmd = "zig build run" `|`repl = nil, title = "", cmd = ""`
 
