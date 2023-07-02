@@ -29,7 +29,7 @@ local vim_compiler = require("vim-compiler").setup()
 vim.keymap.set("n", "<leader>ee", vim_compiler.compile_smart)
 vim.keymap.set("n", "<leader>er", vim_compiler.compile_interactive)
 vim.keymap.set("n", "<leader>ew", vim_compiler.compile_normal)
-vim.keymap.set("n", "<leader>ef", vim_compiler.compile_vim)
+vim.keymap.set("n", "<leader>ef", ":VimCompiler vim<cr>")
 ```
 For programs that take arguments, there is the `VimCompiler [smart | interactive | normal | vim] *args` command. For convenience, you can create a keybinding that enters command mode and autofills part of the command.
 
