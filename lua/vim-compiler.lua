@@ -33,12 +33,14 @@ local function parse_wildcards(str)
     local pre_git = str:gsub("%%f", vim.fn.expand("%:p")):gsub("%%s", vim.fn.expand("%:p:r")):gsub("%%h", vim.fn.expand("%:p:h"))
     local git_root = vim.fn.system("git rev-parse --show-toplevel")
 
-    local post_git = ""
+    local no_git = ""
     if git_root:gmatch("fatal:")() == nil then
-        post_git = git_root:sub(0, -2)
+        pre_git = pre_git:gsub("%%g", git_root:sub(0, -2))
+    else
+        pre_git = no_git
     end
 
-    return pre_git:gsub("%%g", post_git)
+    return pre_git
 end
 
 M.compile_vim = function(args)
