@@ -1,4 +1,4 @@
-ltcal M = {}
+local M = {}
 
 local commands = {
         c = { normal = {cd = "cd %g;", cmd = "make"}, interactive = { repl = nil, title = "", cmd = ""}},
