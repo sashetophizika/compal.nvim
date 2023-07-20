@@ -1,4 +1,4 @@
-local M = {}
+ltcal M = {}
 
 local commands = {
         c = { normal = {cd = "cd %g;", cmd = "make"}, interactive = { repl = nil, title = "", cmd = ""}},
@@ -33,11 +33,12 @@ local function parse_wildcards(str)
     local pre_git = str:gsub("%%f", vim.fn.expand("%:p")):gsub("%%s", vim.fn.expand("%:p:r")):gsub("%%h", vim.fn.expand("%:p:h"))
     local git_root = vim.fn.system("git rev-parse --show-toplevel")
 
+    local post_git = ""
     if git_root:gmatch("fatal:")() == nil then
-        pre_git = pre_git:gsub("%%g", git_root:sub(0, -2))
+        post_git = git_root:sub(0, -2)
     end
 
-    return pre_git
+    return pre_git:gsub("%%g", post_git)
 end
 
 M.compile_vim = function(args)
@@ -46,7 +47,8 @@ M.compile_vim = function(args)
     if M.save then
         vim.cmd("w")
     end
-    print(vim.fn.system(parse_wildcards(M.cmd[vim.bo.filetype].normal.cmd) .. args))
+
+    vim.fn.system(parse_wildcards(M.cmd[vim.bo.filetype].normal.cmd) .. args)
 end
 
 M.compile_normal = function(args)
