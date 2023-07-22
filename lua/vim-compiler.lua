@@ -36,7 +36,7 @@ local function parse_wildcards(str)
     local no_git = ""
     if git_root:gmatch("fatal:")() == nil then
         pre_git = pre_git:gsub("%%g", git_root:sub(0, -2))
-    else
+    else if pregit:gmatch("%g") then
         pre_git = no_git
     end
 
@@ -72,7 +72,7 @@ M.compile_normal = function(args)
             vim.fn.system("tmux select-pane -t " .. pane_index)
         end
 
-        vim.fn.system(string.format("tmux send-keys C-z '%s' Enter", parse_wildcards(M.cmd[vim.bo.filetype].normal.cd) .. parse_wildcards(M.cmd[vim.bo.filetype].normal.cmd) .. args))
+        vim.fn.system(string.format("tmux send-keys C-z '%s' Enter", parse_wildcards(M.cmd[vim.bo.filetype].normal.cd .. M.cmd[vim.bo.filetype].normal.cmd) .. args))
 
         if M.cmd.focus_shell == false then
             vim.fn.system("tmux select-pane -t " .. tonumber(pane_index) - 1)
