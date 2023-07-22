@@ -36,9 +36,10 @@ local function parse_wildcards(str)
     local no_git = ""
     if git_root:gmatch("fatal:")() == nil then
         pre_git = pre_git:gsub("%%g", git_root:sub(0, -2))
-    else if pre_git:gmatch("%g") then
-        pre_git = no_git
-end
+    else
+        if pre_git:gmatch("%g")() then
+            pre_git = no_git
+        end
     end
 
     return pre_git
