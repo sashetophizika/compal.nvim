@@ -74,7 +74,11 @@ M.compile_normal = function(args)
             vim.fn.system("tmux select-pane -t " .. pane_index)
         end
 
+<<<<<<< HEAD
         vim.fn.system(string.format("tmux send-keysg C-z '%s' Enter", parse_wildcards(M.cmd[vim.bo.filetype].normal.cd .. M.cmd[vim.bo.filetype].normal.cmd) .. args))
+=======
+        vim.fn.system(string.format("tmux send-keys C-z '%s' Enter", parse_wildcards(M.cmd[vim.bo.filetype].normal.cd .. M.cmd[vim.bo.filetype].normal.cmd) .. args))
+>>>>>>> upstream/master
 
         if M.cmd.focus_shell == false then
             vim.fn.system("tmux select-pane -t " .. tonumber(pane_index) - 1)
@@ -104,7 +108,11 @@ M.compile_interactive = function(args)
                 if sh_present ~= "" then
                     pane_index = sh_present:gmatch("%w+")()
                     vim.fn.system("tmux select-pane -t " .. pane_index)
+<<<<<<< HEAD
                     vim.fn.system(string.format("tmux send-keysg C-z '%s' Enter", M.cmd[ft].interactive.repl))
+=======
+                    vim.fn.system(string.format("tmux send-keys C-z '%s' Enter", M.cmd[ft].interactive.repl))
+>>>>>>> upstream/master
                 else
                     pane_index = tonumber(vim.fn.system("tmux display-message -p '#{pane_index}'")) + 1
                     vim.fn.system(M.cmd.split .. " " .. M.cmd[ft].interactive.repl)
@@ -115,7 +123,11 @@ M.compile_interactive = function(args)
             end
         end
 
+<<<<<<< HEAD
         vim.fn.system(string.format("tmux send-keysg '%s' Enter", parse_wildcards(M.cmd[ft].interactive.cmd) .. args))
+=======
+        vim.fn.system(string.format("tmux send-keys '%s' Enter", parse_wildcards(M.cmd[ft].interactive.cmd) .. args))
+>>>>>>> upstream/master
 
         if M.cmd.focus_repl == false then
             vim.fn.system("tmux select-pane -t" .. tonumber(pane_index) - 1)
