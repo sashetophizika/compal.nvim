@@ -90,7 +90,7 @@ local vim_compiler = require("vim-compiler").setup({
             cd = "cd %g;",
             cmd = "cargo run --release"
         },
-    }
+    },
     split = "tmux split -v -p 40 -c #{pane_current_path}",
     focus_shell = false,
 })
