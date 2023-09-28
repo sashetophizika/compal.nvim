@@ -30,19 +30,18 @@ local commands = {
 }
 
 local function parse_wildcards(str)
-    local pre_git = str:gsub("%%f", vim.fn.expand("%:p")):gsub("%%s", vim.fn.expand("%:p:r")):gsub("%%h", vim.fn.expand("%:p:h"))
-    local git_root = vim.fn.system("git rev-parse --show-toplevel")
+    local parsed_command = str:gsub("%%f", vim.fn.expand("%:p")):gsub("%%s", vim.fn.expand("%:p:r")):gsub("%%h", vim.fn.expand("%:p:h"))
+    local git_root = vim.fn.system("git rev-parse --show-toplevel"):sub(0, -2)
 
-    local no_git = ""
     if git_root:gmatch("fatal:")() == nil then
-        pre_git = pre_git:gsub("%%g", git_root:sub(0, -2))
+        parsed_command = parsed_command:gsub("%%g", git_root)
     else
-        if pre_git:gmatch("%g")() then
-            pre_git = no_git
+        if parsed_command:gmatch("%%g")() then
+            error("File is not in a git repository but '%g' was used the command!!")
         end
     end
 
-    return pre_git
+    return parsed_command
 end
 
 M.compile_vim = function(args)
@@ -148,8 +147,8 @@ M.setup = function(opts)
         return res
     end
 
-    vim.api.nvim_create_user_command("VimCompiler", function(opts)
-        M["compile_" .. opts.fargs[1]](concat_args(opts.fargs))
+    vim.api.nvim_create_user_command("VimCompiler", function(opt)
+        M["compile_" .. opt.fargs[1]](concat_args(opt.fargs))
     end,
         {nargs = "*",
         complete = function()
