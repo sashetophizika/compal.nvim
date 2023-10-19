@@ -10,7 +10,7 @@ local commands = {
         cs = { normal = {cd = "cd %g;", cmd = "dotnet run"}, interactive = { repl = nil, title = "", cmd = ""}},
         php = { normal = {cd = "", cmd = "php %f"}, interactive = { repl = nil, title = "", cmd = ""}},
         haskell = { normal = {cd = "cd %g", cmd = "cabal run"}, interactive = { repl = "ghci", title = "ghc", cmd = ":l %f"}},
-        lua = { normal = {cd = "", cmd = "lua %f"}, interactive = { repl = "lua", title = "lua", cmd = "dofile('%f')"}},
+        lua = { normal = {cd = "", cmd = "lua %f"}, interactive = { repl = "lua", title = "lua", cmd = "dofile(\"%f\")"}},
         java = { normal = {cd = "", cmd = "javac %f"}, interactive = { repl = nil, title = "", cmd = ""}},
         javascript = { normal = {cd = "", cmd = "node %f"}, interactive = { repl = nil, title = "", cmd = ""}},
         ruby = { normal = {cd = "", cmd = "ruby %f"}, interactive = { repl = "irb", title = "irb", cmd = 'require "%f"'}},
