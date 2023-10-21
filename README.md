@@ -113,7 +113,7 @@ Any missing language can be added when calling `setup()` using the given format.
 |`javascript`|`cd = "", cmd = "node %f"`|`repl = nil, title = "", cmd = ""`
 |`julia`|`cd = "", cmd = "julia %f"`|`repl = "julia", title = "julia", cmd = 'include("%f")'`
 |`kotlin`|`cd = "", cmd = "kotlinc %f"`|`repl = nil, title = "", cmd = ""`
-|`lua`|`cd = "", cmd = "lua %f"`|`repl = "lua", title = "lua", cmd = 'require("%f")'`
+|`lua`|`cd = "", cmd = "lua %f"`|`repl = "lua", title = "lua", cmd = 'dofile("%f")'`
 |`php`|`cd = "", cmd = "php %f"`|`repl = nil, title = "", cmd = ""`
 |`python`|`cd = "", cmd = "python %f"`|`repl = "ipython", title = "python", cmd = "%run %f"`
 |`ruby`|`cd = "", cmd = "ruby %f"`|`repl = "irb", title = "irb", cmd = 'require "%f"'`
