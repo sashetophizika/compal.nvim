@@ -62,7 +62,7 @@ M.compile_normal = function(args)
     end
 
     if os.getenv("TMUX") then
-        local sh_pane = vim.fn.system("tmux list-panes -F '#{pane_index} #{pane_current_command}' | rg sh")
+        local sh_pane = vim.fn.system("tmux list-panes -F '#{pane_index} #{pane_current_command}' | grep sh")
         local pane_index
 
         if sh_pane == "" then
@@ -90,7 +90,7 @@ M.compile_interactive = function(args)
 
     if os.getenv("TMUX") then
         local ft = vim.bo.filetype
-        local sh_pane = vim.fn.system("tmux list-panes -F '#{pane_index} #{pane_current_command}' | rg " .. M.cmd[ft].interactive.title)
+        local sh_pane = vim.fn.system("tmux list-panes -F '#{pane_index} #{pane_current_command}' | grep " .. M.cmd[ft].interactive.title)
         local pane_index
 
         if sh_pane ~= "" then
@@ -98,7 +98,7 @@ M.compile_interactive = function(args)
             vim.fn.system("tmux select-pane -t " .. pane_index)
         else
             if M.cmd.override_shell then
-                local sh_present = vim.fn.system("tmux list-panes -F '#{pane_index} #{pane_current_command}' | rg sh")
+                local sh_present = vim.fn.system("tmux list-panes -F '#{pane_index} #{pane_current_command}' | grep sh")
 
                 if sh_present ~= "" then
                     pane_index = sh_present:gmatch("%w+")()
