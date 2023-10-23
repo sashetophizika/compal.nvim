@@ -51,7 +51,7 @@ M.compile_vim = function(args)
         vim.cmd("w")
     end
 
-    vim.fn.system(parse_wildcards(M.cmd[vim.bo.filetype].normal.cmd) .. args)
+    print(vim.fn.system(parse_wildcards(M.cmd[vim.bo.filetype].normal.cmd) .. args))
 end
 
 M.compile_normal = function(args)
