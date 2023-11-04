@@ -1,6 +1,5 @@
 local M = {}
-
-local commands = {
+M.cmd = {
         c = { normal = {cd = "cd %g;", cmd = "make"}, interactive = { repl = nil, title = "", cmd = ""}},
         rust = { normal = {cd = "cd %g;", cmd = "cargo run"}, interactive = { repl = nil, title = "", cmd = ""}},
         cpp = { normal = {cd = "cd %g;", cmd = "make"}, interactive = { repl = nil, title = "", cmd = ""}},
@@ -51,7 +50,8 @@ M.compile_vim = function(args)
         vim.cmd("w")
     end
 
-    print(vim.fn.system(parse_wildcards(M.cmd[vim.bo.filetype].normal.cmd) .. args))
+    local output = vim.fn.system(parse_wildcards(M.cmd[vim.bo.filetype].normal.cd .. M.cmd[vim.bo.filetype].normal.cmd) .. args)
+    print(output)
 end
 
 M.compile_normal = function(args)
@@ -62,6 +62,7 @@ M.compile_normal = function(args)
     end
 
     if os.getenv("TMUX") then
+        local ft = vim.bo.filetype
         local sh_pane = vim.fn.system("tmux list-panes -F '#{pane_index} #{pane_current_command}' | grep sh")
         local pane_index
 
@@ -73,7 +74,7 @@ M.compile_normal = function(args)
             vim.fn.system("tmux select-pane -t " .. pane_index)
         end
 
-        vim.fn.system(string.format("tmux send-keys C-z C-u '%s' Enter", parse_wildcards(M.cmd[vim.bo.filetype].normal.cd .. M.cmd[vim.bo.filetype].normal.cmd) .. args))
+        vim.fn.system(string.format("tmux send-keys C-z C-u '%s' Enter", parse_wildcards(M.cmd[ft].normal.cd .. M.cmd[ft].normal.cmd) .. args))
 
         if M.cmd.focus_shell == false then
             vim.fn.system("tmux select-pane -t " .. tonumber(pane_index) - 1)
@@ -90,18 +91,18 @@ M.compile_interactive = function(args)
 
     if os.getenv("TMUX") then
         local ft = vim.bo.filetype
-        local sh_pane = vim.fn.system("tmux list-panes -F '#{pane_index} #{pane_current_command}' | grep " .. M.cmd[ft].interactive.title)
+        local repl_pane = vim.fn.system("tmux list-panes -F '#{pane_index} #{pane_current_command}' | grep " .. M.cmd[ft].interactive.title)
         local pane_index
 
-        if sh_pane ~= "" then
-            pane_index = sh_pane:gmatch("%w+")()
+        if repl_pane ~= "" then
+            pane_index = repl_pane:gmatch("%w+")()
             vim.fn.system("tmux select-pane -t " .. pane_index)
         else
             if M.cmd.override_shell then
-                local sh_present = vim.fn.system("tmux list-panes -F '#{pane_index} #{pane_current_command}' | grep sh")
+                local sh_pane = vim.fn.system("tmux list-panes -F '#{pane_index} #{pane_current_command}' | grep sh")
 
-                if sh_present ~= "" then
-                    pane_index = sh_present:gmatch("%w+")()
+                if sh_pane ~= "" then
+                    pane_index = sh_pane:gmatch("%w+")()
                     vim.fn.system("tmux select-pane -t " .. pane_index)
                     vim.fn.system(string.format("tmux send-keys C-z C-u '%s' Enter", M.cmd[ft].interactive.repl))
                 else
@@ -134,10 +135,8 @@ M.compile_smart = function(args)
     end
 end
 
-M.cmd = commands
-
 M.setup = function(opts)
-    if opts then M.cmd = vim.tbl_deep_extend("force", commands, opts) end
+    if opts then M.cmd = vim.tbl_deep_extend("force", M.cmd, opts) end
 
     local function concat_args(argv)
         local res = " "
