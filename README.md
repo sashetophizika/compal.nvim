@@ -56,7 +56,7 @@ filetype = {
 
 ```
 
-The `cmd` and `cd` options allow the use of some wildcards. The `interactive.title` field is there because of certain repls with a title different from the command like `ghci` where title is `ghc` and `ipython` where title is `python`.
+The `cmd` and `cd` options allow the use of some wildcards. When using `cd` make sure to end the command with `;` or `&&` or it would not work. The `interactive.title` field is there because of certain repls have a title different from the command like `ghci` where the title is `ghc` and `ipython` where the title is `python`.
 
 | Wildcard | Description
 |----------|------------|
