@@ -1,26 +1,27 @@
 local M = {}
 M.cmd = {
-        c = { normal = {cd = "cd %g;", cmd = "make"}, interactive = { repl = nil, title = "", cmd = ""}},
-        rust = { normal = {cd = "cd %g;", cmd = "cargo run"}, interactive = { repl = nil, title = "", cmd = ""}},
-        cpp = { normal = {cd = "cd %g;", cmd = "make"}, interactive = { repl = nil, title = "", cmd = ""}},
-        julia = { normal = {cd = "", cmd = "julia %f"}, interactive = { repl = "julia", title = "julia", cmd = 'include("%f")'}},
-        python = { normal = {cd = "", cmd = "python %f"}, interactive = { repl = "ipython", title = "python", cmd = "%run %f"}},
-        sh = { normal = {cd = "", cmd = "bash %f"}, interactive = { repl = nil, title = "", cmd = ""}},
-        cs = { normal = {cd = "cd %g;", cmd = "dotnet run"}, interactive = { repl = nil, title = "", cmd = ""}},
-        php = { normal = {cd = "", cmd = "php %f"}, interactive = { repl = nil, title = "", cmd = ""}},
-        haskell = { normal = {cd = "cd %g", cmd = "cabal run"}, interactive = { repl = "ghci", title = "ghc", cmd = ":l %f"}},
-        lua = { normal = {cd = "", cmd = "lua %f"}, interactive = { repl = "lua", title = "lua", cmd = "dofile(\"%f\")"}},
-        java = { normal = {cd = "", cmd = "javac %f"}, interactive = { repl = nil, title = "", cmd = ""}},
-        javascript = { normal = {cd = "", cmd = "node %f"}, interactive = { repl = nil, title = "", cmd = ""}},
-        ruby = { normal = {cd = "", cmd = "ruby %f"}, interactive = { repl = "irb", title = "irb", cmd = 'require "%f"'}},
-        tex = { normal = {cd = "", cmd = "pdflatex %f"}, interactive = { repl = nil, title = "", cmd = ""}},
-        kotlin = { normal = {cd = "", cmd = "kotlinc %f"}, interactive = { repl = nil, title = "", cmd = ""}},
-        zig = { normal = {cd = "cd %g;", cmd = "zig build run"}, interactive = { repl = nil, title = "", cmd = ""}},
-        typescript = { normal = {cd = "", cmd = "npx tsc %f"}, interactive = { repl = nil, title = "", cmd = ""}},
-        elixir = { normal = {cd = "cd %g;", cmd = "mix compile"}, interactive = { repl = "iex -S mix", title = "beam.smp", cmd = "recompile()"}},
-        clojure = { normal = {cd = "", cmd = "clj -M %f"}, interactive = { repl = "clj", title = "rlwrap", cmd = '(load-file "%f")'}},
-        go = { normal = {cd = "cd %g;", cmd = "go run ."}, interactive = { repl = nil, title = "", cmd = ""}},
-        dart = { normal = {cd = "cd %g;", cmd = "dart run"}, interactive = { repl = nil, title = "", cmd = ""}},
+        c = { normal = {cd = "cd %g;", cmd = "make"}, interactive = { repl = nil, title = "", cmd = "", in_shell = false}},
+        rust = { normal = {cd = "cd %g;", cmd = "cargo run"}, interactive = { repl = nil, title = "", cmd = "", in_shell = false}},
+        cpp = { normal = {cd = "cd %g;", cmd = "make"}, interactive = { repl = nil, title = "", cmd = "", in_shell = false}},
+        julia = { normal = {cd = "", cmd = "julia %f"}, interactive = { repl = "julia", title = "julia", cmd = 'include("%f")', in_shell = false}},
+        python = { normal = {cd = "", cmd = "python %f"}, interactive = { repl = "ipython", title = "python", cmd = "%run %f", in_shell = nil}},
+        sh = { normal = {cd = "", cmd = "bash %f"}, interactive = { repl = nil, title = "", cmd = "", in_shell = false}},
+        cs = { normal = {cd = "cd %g;", cmd = "dotnet run"}, interactive = { repl = nil, title = "", cmd = "", in_shell = false}},
+        php = { normal = {cd = "", cmd = "php %f"}, interactive = { repl = nil, title = "", cmd = "", in_shell = false}},
+        haskell = { normal = {cd = "cd %g", cmd = "cabal run"}, interactive = { repl = "ghci", title = "ghc", cmd = ":l %f", in_shell = false}},
+        lua = { normal = {cd = "", cmd = "lua %f"}, interactive = { repl = "lua", title = "lua", cmd = "dofile(\"%f\")", in_shell = true}},
+        java = { normal = {cd = "", cmd = "javac %f"}, interactive = { repl = nil, title = "", cmd = "", in_shell = false}},
+        javascript = { normal = {cd = "", cmd = "node %f"}, interactive = { repl = nil, title = "", cmd = "", in_shell = false}},
+        ruby = { normal = {cd = "", cmd = "ruby %f"}, interactive = { repl = "irb", title = "irb", cmd = 'require "%f"', in_shell = false}},
+        tex = { normal = {cd = "", cmd = "pdflatex %f"}, interactive = { repl = nil, title = "", cmd = "", in_shell = false}},
+        kotlin = { normal = {cd = "", cmd = "kotlinc %f"}, interactive = { repl = nil, title = "", cmd = "", in_shell = false}},
+        zig = { normal = {cd = "cd %g;", cmd = "zig build run"}, interactive = { repl = nil, title = "", cmd = "", in_shell = false}},
+        typescript = { normal = {cd = "", cmd = "npx tsc %f"}, interactive = { repl = nil, title = "", cmd = "", in_shell = false}},
+        elixir = { normal = {cd = "cd %g;", cmd = "mix compile"}, interactive = { repl = "iex -S mix", title = "beam.smp", cmd = "recompile()", in_shell = false}},
+        ocaml = { normal = {cd = "cd %g;", cmd = "dune build;dune exec $(basename %g)"}, interactive = {repl = "dune utop", title = "utop", cmd = "", in_shell = true}},
+        clojure = { normal = {cd = "", cmd = "clj -M %f"}, interactive = { repl = "clj", title = "rlwrap", cmd = '(load-file "%f")', in_shell = false}},
+        go = { normal = {cd = "cd %g;", cmd = "go run ."}, interactive = { repl = nil, title = "", cmd = "", in_shell = false}},
+        dart = { normal = {cd = "cd %g;", cmd = "dart run"}, interactive = { repl = nil, title = "", cmd = "", in_shell = false}},
     split = "tmux split -v",
     save = true,
     focus_shell = true,
@@ -36,7 +37,7 @@ local function parse_wildcards(str)
         parsed_command = parsed_command:gsub("%%g", git_root)
     else
         if parsed_command:gmatch("%%g")() then
-            error("File is not in a git repository but '%g' was used the command!!")
+            error("File is not in a git repository but '%g' was used in the command!!")
         end
     end
 
@@ -50,8 +51,7 @@ M.compile_vim = function(args)
         vim.cmd("w")
     end
 
-    local output = vim.cmd("!" .. parse_wildcards(M.cmd[vim.bo.filetype].normal.cd .. M.cmd[vim.bo.filetype].normal.cmd) .. args)
-    print(output)
+   vim.cmd("!" .. parse_wildcards(M.cmd[vim.bo.filetype].normal.cd .. M.cmd[vim.bo.filetype].normal.cmd) .. args)
 end
 
 M.compile_normal = function(args)
@@ -82,6 +82,15 @@ M.compile_normal = function(args)
     end
 end
 
+local function handle_interactive_split(ft)
+    if M.cmd[ft].interactive.in_shell then
+        vim.fn.system(M.cmd.split)
+        vim.fn.system(string.format("tmux send-key '%s' Enter" , M.cmd[ft].interactive.repl))
+    else
+        vim.fn.system(M.cmd.split .. " " .. M.cmd[ft].interactive.repl)
+    end
+end
+
 M.compile_interactive = function(args)
     args = args or ""
 
@@ -107,11 +116,11 @@ M.compile_interactive = function(args)
                     vim.fn.system(string.format("tmux send-keys C-z C-u '%s' Enter", M.cmd[ft].interactive.repl))
                 else
                     pane_index = tonumber(vim.fn.system("tmux display-message -p '#{pane_index}'")) + 1
-                    vim.fn.system(M.cmd.split .. " " .. M.cmd[ft].interactive.repl)
+                    handle_interactive_split(ft)
                 end
             else
                 pane_index = tonumber(vim.fn.system("tmux display-message -p '#{pane_index}'")) + 1
-                vim.fn.system(M.cmd.split .. " " .. M.cmd[ft].interactive.repl)
+                handle_interactive_split(ft)
             end
         end
 

@@ -96,7 +96,7 @@ local vim_compiler = require("vim-compiler").setup({
 })
 ```
 ##  Default Language table
-Any missing language can be added when calling `setup()` using the given format.
+Any missing language can be added when calling `setup()` using the given format. The is also an `interactive.in_shell [bool]` parameter for each language that defines if the repl should be nested inside a shell, by default only `true` for `ocaml` because it doesn't work otherwise.
 
 |Language | Normal | Interactive
 |---------|--------|-----------
@@ -114,6 +114,7 @@ Any missing language can be added when calling `setup()` using the given format.
 |`julia`|`cd = "", cmd = "julia %f"`|`repl = "julia", title = "julia", cmd = 'include("%f")'`
 |`kotlin`|`cd = "", cmd = "kotlinc %f"`|`repl = nil, title = "", cmd = ""`
 |`lua`|`cd = "", cmd = "lua %f"`|`repl = "lua", title = "lua", cmd = 'dofile("%f")'`
+|`ocaml`|`cd = "cd %g;", cmd = "dune build; dune exec $(basename %g)"`|`repl = "dune utop", title = "utop", cmd = ""`
 |`php`|`cd = "", cmd = "php %f"`|`repl = nil, title = "", cmd = ""`
 |`python`|`cd = "", cmd = "python %f"`|`repl = "ipython", title = "python", cmd = "%run %f"`
 |`ruby`|`cd = "", cmd = "ruby %f"`|`repl = "irb", title = "irb", cmd = 'require "%f"'`
