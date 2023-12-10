@@ -47,7 +47,7 @@ end
 M.compile_vim = function(args)
     args = args or ""
 
-    if M.save then
+    if M.cmd.save then
         vim.cmd("w")
     end
 
@@ -57,7 +57,7 @@ end
 M.compile_normal = function(args)
     args = args or ""
 
-    if M.save then
+    if M.cmd.save then
         vim.cmd("w")
     end
 
@@ -94,7 +94,7 @@ end
 M.compile_interactive = function(args)
     args = args or ""
 
-    if M.save then
+    if M.cmd.save then
         vim.cmd("w")
     end
 
