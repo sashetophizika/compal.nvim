@@ -4,11 +4,11 @@ Set a keybinding to compile and run code in any language inside nvim or a sepera
 ## Installation
 Using [Plug](https://github.com/junegunn/vim-plug)
 ```lua
-Plug('sasheto-phizika/vim-compiler.nvim')
+Plug('sasheto-phizika/compal.nvim')
 ```
 Using [packer](https://github.com/wbthomason/packer.nvim)
 ```lua
-use 'sasheto-phizika/vim-compiler.nvim'
+use 'sasheto-phizika/compal.nvim'
 ```
 
 ## Basic Usage
@@ -25,11 +25,11 @@ The plugin provides 4 functions that execute commands based on the filetype defi
 Set keybindings inside `init.lua`
 
 ```lua
-local vim_compiler = require("vim-compiler").setup()
-vim.keymap.set("n", "<leader>ee", vim_compiler.compile_smart)
-vim.keymap.set("n", "<leader>er", vim_compiler.compile_interactive)
-vim.keymap.set("n", "<leader>ew", vim_compiler.compile_normal)
-vim.keymap.set("n", "<leader>ef", vim_compiler.compile_vim)
+local compal = require("compal").setup()
+vim.keymap.set("n", "<leader>ee", compal.compile_smart)
+vim.keymap.set("n", "<leader>er", compal.compile_interactive)
+vim.keymap.set("n", "<leader>ew", compal.compile_normal)
+vim.keymap.set("n", "<leader>ef", compal.compile_vim)
 ```
 For programs that take arguments, there is the `VimCompiler [smart | interactive | normal | vim] *args` command. For convenience, you can create a keybinding that enters command mode and autofills part of the command.
 
