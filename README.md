@@ -1,4 +1,4 @@
-# vim-compiler.nvim
+# compal.nvim
 Set a keybinding to compile and run code in any language inside nvim or a seperate tmux pane.
 
 ## Installation
@@ -77,7 +77,7 @@ The `cmd` and `cd` options allow the use of some wildcards. When using `cd` make
 
 ### Example configuration
 ```lua
-local vim_compiler = require("vim-compiler").setup({
+local compal = require("compal").setup({
     python = {
         interactive = {
             repl = "ipython",
