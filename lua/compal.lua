@@ -155,7 +155,7 @@ M.setup = function(opts)
         return res
     end
 
-    vim.api.nvim_create_user_command("VimCompiler", function(opt)
+    vim.api.nvim_create_user_command("Compal", function(opt)
         M["compile_" .. opt.fargs[1]](concat_args(opt.fargs))
     end,
         {nargs = "*",

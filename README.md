@@ -31,10 +31,10 @@ vim.keymap.set("n", "<leader>er", compal.compile_interactive)
 vim.keymap.set("n", "<leader>ew", compal.compile_normal)
 vim.keymap.set("n", "<leader>ef", compal.compile_vim)
 ```
-For programs that take arguments, there is the `VimCompiler [smart | interactive | normal | vim] *args` command. For convenience, you can create a keybinding that enters command mode and autofills part of the command.
+For programs that take arguments, there is the `Compal [smart | interactive | normal | vim] *args` command. For convenience, you can create a keybinding that enters command mode and autofills part of the command.
 
 ```lua
-vim.keymap.set("n", "<leader>ed", ":VimCompiler smart")
+vim.keymap.set("n", "<leader>ed", ":Compal smart")
 ```
 
 ## Configuration
