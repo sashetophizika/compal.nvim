@@ -2,13 +2,18 @@
 Set a keybinding to compile and run code in any language inside nvim or a seperate tmux pane.
 
 ## Installation
-Using [Plug](https://github.com/junegunn/vim-plug)
-```lua
-Plug('sasheto-phizika/compal.nvim')
+Using [Lazy](https://github.com/folke/lazy.nvim)
+```
+{ 'sasheto-phizika/compal.nvim' }
 ```
 Using [packer](https://github.com/wbthomason/packer.nvim)
 ```lua
 use 'sasheto-phizika/compal.nvim'
+
+```
+Using [Plug](https://github.com/junegunn/vim-plug)
+```lua
+Plug('sasheto-phizika/compal.nvim')
 ```
 
 ## Basic Usage
