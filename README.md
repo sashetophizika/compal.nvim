@@ -3,7 +3,7 @@ Set a keybinding to compile and run code in any language inside nvim or a sepera
 
 ## Installation
 Using [Lazy](https://github.com/folke/lazy.nvim)
-```
+```lua
 { 'sasheto-phizika/compal.nvim' }
 ```
 Using [packer](https://github.com/wbthomason/packer.nvim)
