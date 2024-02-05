@@ -49,8 +49,8 @@ The configuration for each language is a table of the form
 ```lua
 filetype = { 
         normal = {
-            cmd = command_for_shell,
             cd = optional_cd_before_cmd,
+            cmd = command_for_shell,
         },
         interactive = {
             repl = command_to_launch_repl,
@@ -70,15 +70,15 @@ The `cmd` and `cd` options allow the use of some wildcards. When using `cd` make
 | `%h` | full path to parent directory of current buffer
 | `%g` | full path to git root directory if it exists
 
-### Global Commands
+### Global Options
 | Option | Default | Description
 |--------|---------|------------|
 | `split`                | `"tmux split -v"` | Command for creating the new pane
-| `save`                 |  `true`   | Whether to save before execution
-| `focus_shell`          |   `true`  | Whether to focus the shell after execution of `compile_normal`  
-| `focus_repl`           |   `true`  | Whether to focus the shell after execution of `compile_interactive`  
-| `override_shell`       |   `true`  | Whether to execute repl command in an available shell pane for `compile_interactive`
-
+| `save`                 | `true`            | Whether to write changes to the file before execution
+| `focus_shell`          | `true`            | Whether to focus the shell after execution of `compile_normal`  
+| `focus_repl`           | `true`            | Whether to focus the shell after execution of `compile_interactive`  
+| `override_shell`       | `true`            | Whether to execute repl command in an available shell pane for `compile_interactive`
+| `window`               | `false`           | Whether to use tmux windows instead of panes (only uses existing windows with only 1 pane)
 
 ### Example configuration
 ```lua
@@ -101,7 +101,7 @@ local compal = require("compal").setup({
 })
 ```
 ##  Default Language table
-Any missing language can be added when calling `setup()` using the given format. The is also an `interactive.in_shell [bool]` parameter for each language that defines if the repl should be nested inside a shell, by default only `true` for `ocaml` because it doesn't work otherwise.
+Any missing language can be added when calling `setup()` using the given format. The is also an `interactive.in_shell [bool]` parameter for each language that defines if the repl should be nested inside a shell, by default only `true` for `ocaml` because `utop` doesn't work otherwise. If you are using an alternative repl (eg. `croissant` for `lua`) and the interactive function fails, try setting this option to true.
 
 |Language | Normal | Interactive
 |---------|--------|-----------
