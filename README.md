@@ -19,7 +19,7 @@ Plug('sasheto-phizika/compal.nvim')
 ## Basic Usage
 The plugin provides 4 functions that execute commands based on the filetype defined by `vim.bo.filetype`. Modifications to filetype detection can be made with [`vim.filetype.add`](https://neovim.io/doc/user/lua.html#lua-filetype).
 
-`run_vim`: Runs the corresponding command inside the vim window. It will block the neovim thread until it completes, not recomended for rund languages.
+`run_vim`: Runs the corresponding command inside the vim window. It will block the neovim thread until it completes, not recomended for compiled languages.
 
 `run_shell`: Runs the command in the first shell pane in the window or if there are none, spawns a shell pane and runs there. Requires an attached tmux session.
 
