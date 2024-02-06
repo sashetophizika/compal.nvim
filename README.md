@@ -1,5 +1,5 @@
 # compal.nvim
-Set a keybinding to compile and run code in any language inside nvim or a seperate tmux pane.
+Set a keybinding to compile and run code in any language inside neovim or a seperate tmux pane.
 
 ## Installation
 Using [Lazy](https://github.com/folke/lazy.nvim)
@@ -19,27 +19,27 @@ Plug('sasheto-phizika/compal.nvim')
 ## Basic Usage
 The plugin provides 4 functions that execute commands based on the filetype defined by `vim.bo.filetype`. Modifications to filetype detection can be made with [`vim.filetype.add`](https://neovim.io/doc/user/lua.html#lua-filetype).
 
-`compile_vim`: Runs the corresponding command inside the vim window.
+`run_vim`: Runs the corresponding command inside the vim window. It will block the neovim thread until it completes, not recomended for rund languages.
 
-`compile_normal`: Runs the command in the first shell pane in the window or if there are none, spawns a shell pane and runs there. Requires an attached tmux session.
+`run_shell`: Runs the command in the first shell pane in the window or if there are none, spawns a shell pane and runs there. Requires an attached tmux session.
 
-`compile_interactive`: For languages that provide a repl, works like `compile_normal` but it uses the corresponding repl instead of the shell. Also overrides existing shell panes by default.
+`run_interactive`: For languages that provide a repl, works like `run_shell` but it uses the corresponding repl instead of the shell. Also overrides existing shell panes by default.
 
-`compile_smart`: Defaults to `compile_interactive`, with `compile_normal` as fallback if filetype doesn't have a repl and `compile_vim` as fallback if neovim isn't running inside tmux.
+`run_smart`: Defaults to `run_interactive`, with `run_shell` as fallback if filetype doesn't have a repl and `run_vim` as fallback if neovim isn't running inside tmux.
 
 Set keybindings inside `init.lua`
 
 ```lua
 local compal = require("compal").setup()
-vim.keymap.set("n", "<leader>ee", compal.compile_smart)
-vim.keymap.set("n", "<leader>er", compal.compile_interactive)
-vim.keymap.set("n", "<leader>ew", compal.compile_normal)
-vim.keymap.set("n", "<leader>ef", compal.compile_vim)
+vim.keymap.set("n", "<leader>ee", compal.run_smart)
+vim.keymap.set("n", "<leader>er", compal.run_interactive)
+vim.keymap.set("n", "<leader>ew", compal.run_shell)
+vim.keymap.set("n", "<leader>ef", compal.run_vim)
 ```
-For programs that take arguments, there is the `Compal [smart | interactive | normal | vim] *args` command. For convenience, you can create a keybinding that enters command mode and autofills part of the command.
+For programs that take arguments, there is the `Compal [smart | interactive | shell | vim] *args` command. For convenience, you can create a keybinding that enters command mode and autofills part of the command.
 
 ```lua
-vim.keymap.set("n", "<leader>ed", ":Compal smart")
+vim.keymap.set("n", "<leader>ed", ":Compal smart ")
 ```
 
 ## Configuration
@@ -48,7 +48,7 @@ The configuration for each language is a table of the form
 
 ```lua
 filetype = { 
-        normal = {
+        shell = {
             cd = optional_cd_before_cmd,
             cmd = command_for_shell,
         },
@@ -75,9 +75,9 @@ The `cmd` and `cd` options allow the use of some wildcards. When using `cd` make
 |--------|---------|------------|
 | `split`                | `"tmux split -v"` | Command for creating the new pane
 | `save`                 | `true`            | Whether to write changes to the file before execution
-| `focus_shell`          | `true`            | Whether to focus the shell after execution of `compile_normal`  
-| `focus_repl`           | `true`            | Whether to focus the shell after execution of `compile_interactive`  
-| `override_shell`       | `true`            | Whether to execute repl command in an available shell pane for `compile_interactive`
+| `focus_shell`          | `true`            | Whether to focus the shell after execution of `run_shell`  
+| `focus_repl`           | `true`            | Whether to focus the shell after execution of `run_interactive`  
+| `override_shell`       | `true`            | Whether to execute repl command in an available shell pane for `run_interactive`
 | `window`               | `false`           | Whether to use tmux windows instead of panes (only uses existing windows with only 1 pane)
 
 ### Example configuration
@@ -91,7 +91,7 @@ local compal = require("compal").setup({
         }
     },
     rust = {
-        normal = {
+        shell = {
             cd = "cd %g;",
             cmd = "cargo run --release"
         },
@@ -103,7 +103,7 @@ local compal = require("compal").setup({
 ##  Default Language table
 Any missing language can be added when calling `setup()` using the given format. The is also an `interactive.in_shell [bool]` parameter for each language that defines if the repl should be nested inside a shell, by default only `true` for `ocaml` because `utop` doesn't work otherwise. If you are using an alternative repl (eg. `croissant` for `lua`) and the interactive function fails, try setting this option to true.
 
-|Language | Normal | Interactive
+|Language | Shell | Interactive
 |---------|--------|-----------
 |`bash`|`cd = "", cmd = "bash %f"`|`repl = nil, title = "", cmd = ""`
 |`c`|`cd = "cd %g;", cmd = "make"`|`repl = nil, title = "", cmd = ""`

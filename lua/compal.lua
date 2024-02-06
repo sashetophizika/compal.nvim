@@ -1,27 +1,27 @@
 local M = {}
 M.cmd = {
-    c = { normal = { cd = "cd %g;", cmd = "make" }, interactive = { repl = nil, title = "", cmd = "", in_shell = false } },
-    rust = { normal = { cd = "cd %g;", cmd = "cargo run" }, interactive = { repl = nil, title = "", cmd = "", in_shell = false } },
-    cpp = { normal = { cd = "cd %g;", cmd = "make" }, interactive = { repl = nil, title = "", cmd = "", in_shell = false } },
-    julia = { normal = { cd = "", cmd = "julia %f" }, interactive = { repl = "julia", title = "julia", cmd = 'include("%f")', in_shell = false } },
-    python = { normal = { cd = "", cmd = "python %f" }, interactive = { repl = "ipython", title = "python", cmd = "%run %f", in_shell = nil } },
-    sh = { normal = { cd = "", cmd = "bash %f" }, interactive = { repl = nil, title = "", cmd = "", in_shell = false } },
-    cs = { normal = { cd = "cd %g;", cmd = "dotnet run" }, interactive = { repl = nil, title = "", cmd = "", in_shell = false } },
-    php = { normal = { cd = "", cmd = "php %f" }, interactive = { repl = nil, title = "", cmd = "", in_shell = false } },
-    haskell = { normal = { cd = "cd %g", cmd = "cabal run" }, interactive = { repl = "ghci", title = "ghc", cmd = ":l %f", in_shell = false } },
-    lua = { normal = { cd = "", cmd = "lua %f" }, interactive = { repl = "lua", title = "lua", cmd = "dofile(\"%f\")", in_shell = false } },
-    java = { normal = { cd = "", cmd = "javac %f" }, interactive = { repl = nil, title = "", cmd = "", in_shell = false } },
-    javascript = { normal = { cd = "", cmd = "node %f" }, interactive = { repl = nil, title = "", cmd = "", in_shell = false } },
-    ruby = { normal = { cd = "", cmd = "ruby %f" }, interactive = { repl = "irb", title = "irb", cmd = 'require "%f"', in_shell = false } },
-    tex = { normal = { cd = "", cmd = "pdflatex %f" }, interactive = { repl = nil, title = "", cmd = "", in_shell = false } },
-    kotlin = { normal = { cd = "", cmd = "kotlinc %f" }, interactive = { repl = nil, title = "", cmd = "", in_shell = false } },
-    zig = { normal = { cd = "cd %g;", cmd = "zig build run" }, interactive = { repl = nil, title = "", cmd = "", in_shell = false } },
-    typescript = { normal = { cd = "", cmd = "npx tsc %f" }, interactive = { repl = nil, title = "", cmd = "", in_shell = false } },
-    elixir = { normal = { cd = "cd %g;", cmd = "mix compile" }, interactive = { repl = "iex -S mix", title = "beam.smp", cmd = "recompile()", in_shell = false } },
-    ocaml = { normal = { cd = "cd %g;", cmd = "dune build;dune exec $(basename %g)" }, interactive = { repl = "dune utop", title = "utop", cmd = "", in_shell = true } },
-    clojure = { normal = { cd = "", cmd = "clj -M %f" }, interactive = { repl = "clj", title = "rlwrap", cmd = '(load-file "%f")', in_shell = false } },
-    go = { normal = { cd = "cd %g;", cmd = "go run ." }, interactive = { repl = nil, title = "", cmd = "", in_shell = false } },
-    dart = { normal = { cd = "cd %g;", cmd = "dart run" }, interactive = { repl = nil, title = "", cmd = "", in_shell = false } },
+    c = { shell = { cd = "cd %g;", cmd = "make" }, interactive = { repl = nil, title = "", cmd = "", in_shell = false } },
+    rust = { shell = { cd = "cd %g;", cmd = "cargo run" }, interactive = { repl = nil, title = "", cmd = "", in_shell = false } },
+    cpp = { shell = { cd = "cd %g;", cmd = "make" }, interactive = { repl = nil, title = "", cmd = "", in_shell = false } },
+    julia = { shell = { cd = "", cmd = "julia %f" }, interactive = { repl = "julia", title = "julia", cmd = 'include("%f")', in_shell = false } },
+    python = { shell = { cd = "", cmd = "python %f" }, interactive = { repl = "ipython", title = "python", cmd = "%run %f", in_shell = nil } },
+    sh = { shell = { cd = "", cmd = "bash %f" }, interactive = { repl = nil, title = "", cmd = "", in_shell = false } },
+    cs = { shell = { cd = "cd %g;", cmd = "dotnet run" }, interactive = { repl = nil, title = "", cmd = "", in_shell = false } },
+    php = { shell = { cd = "", cmd = "php %f" }, interactive = { repl = nil, title = "", cmd = "", in_shell = false } },
+    haskell = { shell = { cd = "cd %g", cmd = "cabal run" }, interactive = { repl = "ghci", title = "ghc", cmd = ":l %f", in_shell = false } },
+    lua = { shell = { cd = "", cmd = "lua %f" }, interactive = { repl = "lua", title = "lua", cmd = "dofile(\"%f\")", in_shell = false } },
+    java = { shell = { cd = "", cmd = "javac %f" }, interactive = { repl = nil, title = "", cmd = "", in_shell = false } },
+    javascript = { shell = { cd = "", cmd = "node %f" }, interactive = { repl = nil, title = "", cmd = "", in_shell = false } },
+    ruby = { shell = { cd = "", cmd = "ruby %f" }, interactive = { repl = "irb", title = "irb", cmd = 'require "%f"', in_shell = false } },
+    tex = { shell = { cd = "", cmd = "pdflatex %f" }, interactive = { repl = nil, title = "", cmd = "", in_shell = false } },
+    kotlin = { shell = { cd = "", cmd = "kotlinc %f" }, interactive = { repl = nil, title = "", cmd = "", in_shell = false } },
+    zig = { shell = { cd = "cd %g;", cmd = "zig build run" }, interactive = { repl = nil, title = "", cmd = "", in_shell = false } },
+    typescript = { shell = { cd = "", cmd = "npx tsc %f" }, interactive = { repl = nil, title = "", cmd = "", in_shell = false } },
+    elixir = { shell = { cd = "cd %g;", cmd = "mix compile" }, interactive = { repl = "iex -S mix", title = "beam.smp", cmd = "recompile()", in_shell = false } },
+    ocaml = { shell = { cd = "cd %g;", cmd = "dune build;dune exec $(basename %g)" }, interactive = { repl = "dune utop", title = "utop", cmd = "", in_shell = true } },
+    clojure = { shell = { cd = "", cmd = "clj -M %f" }, interactive = { repl = "clj", title = "rlwrap", cmd = '(load-file "%f")', in_shell = false } },
+    go = { shell = { cd = "cd %g;", cmd = "go run ." }, interactive = { repl = nil, title = "", cmd = "", in_shell = false } },
+    dart = { shell = { cd = "cd %g;", cmd = "dart run" }, interactive = { repl = nil, title = "", cmd = "", in_shell = false } },
     split = "tmux split -v",
     save = true,
     focus_shell = true,
@@ -46,14 +46,14 @@ local function parse_wildcards(str)
     return parsed_command
 end
 
-M.compile_vim = function(args)
+M.run_vim = function(args)
     args = args or ""
 
     if M.cmd.save then
         vim.cmd("w")
     end
 
-    vim.cmd("!" .. parse_wildcards(M.cmd[vim.bo.filetype].normal.cd .. M.cmd[vim.bo.filetype].normal.cmd) .. args)
+    vim.cmd("!" .. parse_wildcards(M.cmd[vim.bo.filetype].shell.cd .. M.cmd[vim.bo.filetype].shell.cmd) .. args)
 end
 
 local function tmux_list_grep(shell)
@@ -92,7 +92,7 @@ local function tmux_new_pane(ft, interactive)
     end
 end
 
-M.compile_normal = function(args)
+M.run_shell = function(args)
     args = args or ""
 
     if M.cmd.save then
@@ -113,7 +113,7 @@ M.compile_normal = function(args)
         end
 
         vim.fn.system(string.format("tmux send-keys C-z C-u '%s' Enter",
-            parse_wildcards(M.cmd[ft].normal.cd .. M.cmd[ft].normal.cmd) .. args))
+            parse_wildcards(M.cmd[ft].shell.cd .. M.cmd[ft].shell.cmd) .. args))
 
         if M.cmd.focus_shell == false then
             vim.fn.system("tmux select-pane -t " .. tonumber(pane_index) - 1)
@@ -121,7 +121,7 @@ M.compile_normal = function(args)
     end
 end
 
-M.compile_interactive = function(args)
+M.run_interactive = function(args)
     args = args or ""
 
     if M.cmd.save then
@@ -162,15 +162,15 @@ M.compile_interactive = function(args)
     end
 end
 
-M.compile_smart = function(args)
+M.run_smart = function(args)
     if os.getenv("TMUX") then
         if M.cmd[vim.bo.filetype].interactive.repl then
-            M.compile_interactive(args)
+            M.run_interactive(args)
         else
-            M.compile_normal(args)
+            M.run_shell(args)
         end
     else
-        M.compile_vim(args)
+        M.run_vim(args)
     end
 end
 
@@ -186,12 +186,12 @@ M.setup = function(opts)
     end
 
     vim.api.nvim_create_user_command("Compal", function(opt)
-            M["compile_" .. opt.fargs[1]](concat_args(opt.fargs))
+            M["run_" .. opt.fargs[1]](concat_args(opt.fargs))
         end,
         {
             nargs = "*",
             complete = function()
-                return { "smart", "interactive", "vim", "normal" }
+                return { "smart", "interactive", "vim", "shell" }
             end,
         })
 
