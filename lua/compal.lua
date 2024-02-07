@@ -30,6 +30,18 @@ M.cmd = {
     window = false
 }
 
+local function init(args)
+    local ft = vim.bo.filetype
+    if not M.cmd[ft] then
+        error("\nFiletype not supported!! It can be added in init.lua.\n")
+    end
+
+    if M.cmd.save then
+        vim.cmd("w")
+    end
+    return ft, args or ""
+end
+
 local function parse_wildcards(str)
     local parsed_command = str:gsub("%%f", vim.fn.expand("%:p")):gsub("%%s", vim.fn.expand("%:p:r")):gsub("%%h",
         vim.fn.expand("%:p:h"))
@@ -39,7 +51,7 @@ local function parse_wildcards(str)
         parsed_command = parsed_command:gsub("%%g", git_root)
     else
         if parsed_command:gmatch("%%g")() then
-            error("File is not in a git repository but '%g' was used in the command!!")
+            error("\nFile is not in a git repository but '%g' was used in the command!!\n")
         end
     end
 
@@ -47,18 +59,16 @@ local function parse_wildcards(str)
 end
 
 M.run_vim = function(args)
-    args = args or ""
+    local ft
+    ft, args = init(args)
 
-    if M.cmd.save then
-        vim.cmd("w")
-    end
-
-    vim.cmd("!" .. parse_wildcards(M.cmd[vim.bo.filetype].shell.cd .. M.cmd[vim.bo.filetype].shell.cmd) .. args)
+    vim.cmd("!" .. parse_wildcards(M.cmd[ft].shell.cd .. M.cmd[ft].shell.cmd) .. args)
 end
 
 local function tmux_list_grep(shell)
     if M.cmd.window then
-        return vim.fn.system("tmux list-windows -F '#{window_index} #{pane_current_command} #{window_panes}' | grep -E '" ..
+        return vim.fn.system(
+            "tmux list-windows -F '#{window_index} #{pane_current_command} #{window_panes}' | grep -E '" ..
             shell .. " 1'")
     else
         return vim.fn.system("tmux list-panes -F '#{pane_index} #{pane_current_command}' | grep " .. shell)
@@ -93,20 +103,16 @@ local function tmux_new_pane(ft, interactive)
 end
 
 M.run_shell = function(args)
-    args = args or ""
-
-    if M.cmd.save then
-        vim.cmd("w")
-    end
+    local ft
+    ft, args = init(args)
 
     if os.getenv("TMUX") then
-        local ft = vim.bo.filetype
         local sh_pane = tmux_list_grep("sh")
         local pane_index
 
         if sh_pane == "" then
             pane_index = tonumber(vim.fn.system("tmux display-message -p '#{pane_index}'")) + 1
-            tmux_new_pane(vim.bo.filetype, false)
+            tmux_new_pane(ft, false)
         else
             pane_index = sh_pane:gmatch("%w+")()
             tmux_select(pane_index)
@@ -118,18 +124,16 @@ M.run_shell = function(args)
         if M.cmd.focus_shell == false then
             vim.fn.system("tmux select-pane -t " .. tonumber(pane_index) - 1)
         end
+    else
+        error("\nNo active tmux session!!\n")
     end
 end
 
 M.run_interactive = function(args)
-    args = args or ""
-
-    if M.cmd.save then
-        vim.cmd("w")
-    end
+    local ft
+    ft, args = init(args)
 
     if os.getenv("TMUX") then
-        local ft = vim.bo.filetype
         local repl_pane = tmux_list_grep(M.cmd[ft].interactive.title)
         local pane_index
 
@@ -159,6 +163,8 @@ M.run_interactive = function(args)
         if M.cmd.focus_repl == false then
             vim.fn.system("tmux select-pane -t" .. tonumber(pane_index) - 1)
         end
+    else
+        error("\nNo active tmux session!!\n")
     end
 end
 
