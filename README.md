@@ -36,11 +36,13 @@ vim.keymap.set("n", "<leader>er", compal.run_interactive)
 vim.keymap.set("n", "<leader>ew", compal.run_shell)
 vim.keymap.set("n", "<leader>ef", compal.run_vim)
 ```
-For programs that take arguments, there is the `Compal [smart | interactive | shell | vim] *args` command. For convenience, you can create a keybinding that enters command mode and autofills part of the command.
+For programs that take arguments, there is the `Compal [smart | interactive | shell | vim | set] *args` command. For convenience, you can create a keybinding that enters command mode and autofills part of the command.
 
 ```lua
 vim.keymap.set("n", "<leader>ed", ":Compal smart ")
 ```
+
+The `set` options let you change the configuration for the current buffer. For example, `:Compal set shell cmd cmake .` or `:Compal set shell cd` to remove the default cd command, where the filetype is inferred from `vim.bo.filetype`.
 
 ## Configuration
 ### Language Configuration

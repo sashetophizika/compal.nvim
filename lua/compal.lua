@@ -180,24 +180,34 @@ M.run_smart = function(args)
     end
 end
 
+local function concat_args(argv, first, last)
+    local res = " "
+    for i = first or 1, last or #argv do
+        res = res .. argv[i] .. " "
+    end
+    return res
+end
+
+M.set_cmd = function(args)
+    local new_cmd = concat_args(args, 4)
+    M.cmd[vim.bo.filetype][args[2]][args[3]] = new_cmd
+    print(new_cmd)
+end
+
 M.setup = function(opts)
     if opts then M.cmd = vim.tbl_deep_extend("force", M.cmd, opts) end
 
-    local function concat_args(argv)
-        local res = " "
-        for i = 2, #argv do
-            res = res .. argv[i] .. " "
-        end
-        return res
-    end
-
     vim.api.nvim_create_user_command("Compal", function(opt)
-            M["run_" .. opt.fargs[1]](concat_args(opt.fargs))
+            if opt.fargs[1] == "set" then
+                M.set_cmd(opt.fargs)
+            else
+                M["run_" .. opt.fargs[1]](concat_args(opt.fargs, 2))
+            end
         end,
         {
             nargs = "*",
             complete = function()
-                return { "smart", "interactive", "vim", "shell" }
+                return { "smart", "interactive", "vim", "shell", "set" }
             end,
         })
 
