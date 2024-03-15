@@ -104,7 +104,7 @@ local function multiplexer_select(index)
 end
 
 local function multiplexer_new_pane(ft, mp, interactive)
-    local new_pane = M.cmd.split[mp]
+    local new_pane = M.cmd.split
     if M.cmd.window then
         new_pane = multiplexer_commands.new_window.tmux
     end
