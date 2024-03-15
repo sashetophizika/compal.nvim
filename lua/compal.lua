@@ -30,8 +30,28 @@ M.cmd = {
     window = false
 }
 
+local multiplexer_commands = {
+    window_list_grep = { tmux = "tmux list-windows -F '#{window_index} #{pane_current_command} #{window_panes}' | grep -E '" },
+    pane_list_grep = { tmux = "tmux list-panes -F '#{pane_index} #{pane_current_command}' | grep " },
+    new_window = { tmux = "tmux new-window" },
+    window_select = { tmux = "tmux select-window -t " },
+    pane_select = { tmux = "tmux select-pane -t " },
+    send_keys = { tmux = "tmux send-key C-u '%s' Enter" },
+    pane_index = { tmux = "tmux display-message -p '#{pane_index}'" },
+
+}
+
 local function init(args)
     local ft = vim.bo.filetype
+    local mp
+
+    if os.getenv("TMUX") then
+        mp = "tmux"
+    elseif os.getenv("ZELLIJ") then
+        error("\nZellij not yet supported.\n")
+        mp = "zellij"
+    end
+
     if not M.cmd[ft] then
         error("\nFiletype not supported!! It can be added in init.lua.\n")
     end
@@ -39,7 +59,7 @@ local function init(args)
     if M.cmd.save then
         vim.cmd("w")
     end
-    return ft, args or ""
+    return ft, mp, args or ""
 end
 
 local function parse_wildcards(str)
@@ -60,33 +80,33 @@ end
 
 M.run_vim = function(args)
     local ft
-    ft, args = init(args)
+    ft, _, args = init(args)
 
     vim.cmd("!" .. parse_wildcards(M.cmd[ft].shell.cd .. M.cmd[ft].shell.cmd) .. args)
 end
 
-local function tmux_list_grep(shell)
+local function multiplexer_list_grep(shell)
     if M.cmd.window then
         return vim.fn.system(
-            "tmux list-windows -F '#{window_index} #{pane_current_command} #{window_panes}' | grep -E '" ..
+            multiplexer_commands.window_list_grep.tmux ..
             shell .. " 1'")
     else
-        return vim.fn.system("tmux list-panes -F '#{pane_index} #{pane_current_command}' | grep " .. shell)
+        return vim.fn.system(multiplexer_commands.pane_list_grep.tmux .. shell)
     end
 end
 
-local function tmux_select(index)
+local function multiplexer_select(index)
     if M.cmd.window then
-        vim.fn.system("tmux select-window -t " .. index)
+        vim.fn.system(multiplexer_commands.window_select.tmux .. index)
     else
-        vim.fn.system("tmux select-pane -t " .. index)
+        vim.fn.system(multiplexer_commands.pane_select.tmux .. index)
     end
 end
 
-local function tmux_new_pane(ft, interactive)
-    local new_pane = M.cmd.split
+local function multiplexer_new_pane(ft, mp, interactive)
+    local new_pane = M.cmd.split[mp]
     if M.cmd.window then
-        new_pane = "tmux new-window"
+        new_pane = multiplexer_commands.new_window.tmux
     end
 
     local repl = ""
@@ -96,7 +116,7 @@ local function tmux_new_pane(ft, interactive)
 
     if M.cmd[ft].interactive.in_shell then
         vim.fn.system(new_pane)
-        vim.fn.system(string.format("tmux send-key '%s' Enter", repl))
+        vim.fn.system(string.format(multiplexer_commands.send_keys.tmux, repl))
     else
         vim.fn.system(new_pane .. " " .. repl)
     end
@@ -104,72 +124,75 @@ end
 
 M.run_shell = function(args)
     local ft
-    ft, args = init(args)
+    local mp
+    ft, mp, args = init(args)
 
-    if os.getenv("TMUX") then
-        local sh_pane = tmux_list_grep("sh")
+    if mp then
+        local sh_pane = multiplexer_list_grep("sh")
         local pane_index
 
         if sh_pane == "" then
-            pane_index = tonumber(vim.fn.system("tmux display-message -p '#{pane_index}'")) + 1
-            tmux_new_pane(ft, false)
+            pane_index = tonumber(vim.fn.system(multiplexer_commands.pane_index[mp])) + 1
+            multiplexer_new_pane(ft, mp, false)
         else
             pane_index = sh_pane:gmatch("%w+")()
-            tmux_select(pane_index)
+            multiplexer_select(pane_index)
         end
 
-        vim.fn.system(string.format("tmux send-keys C-z C-u '%s' Enter",
+        vim.fn.system(string.format(multiplexer_commands.send_keys[mp],
             parse_wildcards(M.cmd[ft].shell.cd .. M.cmd[ft].shell.cmd) .. args))
 
         if M.cmd.focus_shell == false then
-            vim.fn.system("tmux select-pane -t " .. tonumber(pane_index) - 1)
+            vim.fn.system(multiplexer_commands.pane_select[mp] .. tonumber(pane_index) - 1)
         end
     else
-        error("\nNo active tmux session!!\n")
+        error("\nNo active multiplexer session!!\n")
     end
 end
 
 M.run_interactive = function(args)
     local ft
-    ft, args = init(args)
+    local mp
+    ft, mp, args = init(args)
 
-    if os.getenv("TMUX") then
-        local repl_pane = tmux_list_grep(M.cmd[ft].interactive.title)
+    if mp then
+        local repl_pane = multiplexer_list_grep(M.cmd[ft].interactive.title)
         local pane_index
 
         if repl_pane ~= "" then
             pane_index = repl_pane:gmatch("%w+")()
-            tmux_select(pane_index)
+            multiplexer_select(pane_index)
         else
             if M.cmd.override_shell then
-                local sh_pane = tmux_list_grep("sh")
+                local sh_pane = multiplexer_list_grep("sh")
 
                 if sh_pane ~= "" then
                     pane_index = sh_pane:gmatch("%w+")()
-                    tmux_select(pane_index)
-                    vim.fn.system(string.format("tmux send-keys C-z C-u '%s' Enter", M.cmd[ft].interactive.repl))
+                    multiplexer_select(pane_index)
+                    vim.fn.system(string.format(multiplexer_commands.send_keys[mp], M.cmd[ft].interactive.repl))
                 else
-                    pane_index = tonumber(vim.fn.system("tmux display-message -p '#{pane_index}'")) + 1
-                    tmux_new_pane(ft, true)
+                    pane_index = tonumber(vim.fn.system(multiplexer_commands.pane_index[mp])) + 1
+                    multiplexer_new_pane(ft, mp, true)
                 end
             else
-                pane_index = tonumber(vim.fn.system("tmux display-message -p '#{pane_index}'")) + 1
-                tmux_new_pane(ft, true)
+                pane_index = tonumber(vim.fn.system(multiplexer_commands.pane_index[mp])) + 1
+                multiplexer_new_pane(ft, mp, true)
             end
         end
 
-        vim.fn.system(string.format("tmux send-keys C-u '%s' Enter", parse_wildcards(M.cmd[ft].interactive.cmd) .. args))
+        vim.fn.system(string.format(multiplexer_commands.send_keys[mp],
+            parse_wildcards(M.cmd[ft].interactive.cmd) .. args))
 
         if M.cmd.focus_repl == false then
-            vim.fn.system("tmux select-pane -t" .. tonumber(pane_index) - 1)
+            vim.fn.system(multiplexer_commands.pane_select[mp] .. tonumber(pane_index) - 1)
         end
     else
-        error("\nNo active tmux session!!\n")
+        error("\nNo active multiplexer session!!\n")
     end
 end
 
 M.run_smart = function(args)
-    if os.getenv("TMUX") then
+    if os.getenv("TMUX") or os.getenv("ZELLIJ") then
         if M.cmd[vim.bo.filetype].interactive.repl then
             M.run_interactive(args)
         else
