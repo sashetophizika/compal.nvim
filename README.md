@@ -81,27 +81,52 @@ The `cmd` and `cd` options allow the use of some wildcards. When using `cd` make
 | `focus_repl`           | `true`            | Whether to focus the shell after execution of `run_interactive`  
 | `override_shell`       | `true`            | Whether to execute repl command in an available shell pane for `run_interactive`
 | `window`               | `false`           | Whether to use tmux windows instead of panes (only uses existing windows with only 1 pane)
+| `telescope`            | `false`           | Enables telescope integration
 
 ### Example configuration
 ```lua
 local compal = require("compal").setup({
+    rust = {
+        shell = {
+            cd = "cd %g;",
+            cmd = "cargo run --release",
+        },
+    },
     python = {
         interactive = {
             repl = "ipython",
             title = "python",
             cmd = "%run %f",
-        }
-    },
-    rust = {
-        shell = {
-            cd = "cd %g;",
-            cmd = "cargo run --release"
         },
     },
     split = "tmux split -v -p 40 -c #{pane_current_path}",
     focus_shell = false,
 })
 ```
+
+## Telescope Integration
+If you have [telescope](https://github.com/nvim-telescope/telescope.nvim) installed and set `telescope = true` in your setup, you can add an `extra` argument to the `shell` and `interactive` tables of a language and use the `picker_shell` and `picker_interactive` to spawn a menu with extra commands and and execute them instead of the normal one. For example:
+
+```lua
+local compal = require("compal").setup({
+    rust = {
+        shell = {
+            extra = {"cargo run --release", "cargo build --release", "rustc %f;%s"},
+        },
+    },
+    python = {
+        interactive = {
+            extra = {"%run %f 42", "%run %f 3.14", "%run %f 01011001"},
+        },
+    },
+    telescope = true,
+})
+
+vim.keymap.set('n', '<leader>fe', compal.picker_shell)
+vim.keymap.set('n', '<leader>fr', compal.picker_interactive)
+
+```
+
 ##  Default Language table
 Any missing language can be added when calling `setup()` using the given format. The is also an `interactive.in_shell [bool]` parameter for each language that defines if the repl should be nested inside a shell, by default only `true` for `ocaml` because `utop` doesn't work otherwise. If you are using an alternative repl (eg. `croissant` for `lua`) and the interactive function fails, try setting this option to true.
 
