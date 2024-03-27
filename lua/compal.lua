@@ -238,7 +238,7 @@ M.get_cmd = function(args)
 end
 
 M.set_cmd = function(args)
-    local new_cmd = concat_args(args, 4)
+    local new_cmd = concat_args(args, 4):sub(2)
     M.cmd[vim.bo.filetype][args[2]][args[3]] = new_cmd
     print(new_cmd)
 end
