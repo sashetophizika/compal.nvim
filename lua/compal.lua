@@ -28,7 +28,10 @@ M.cmd = {
     focus_repl = true,
     override_shell = true,
     window = false,
-    telescope = false,
+    telescope = {
+        enabled = false,
+        auto_append = true,
+    }
 }
 
 local multiplexer_commands = {
@@ -78,11 +81,27 @@ local function parse_wildcards(str)
     return parsed_command
 end
 
+local function auto_append(cmd, ft, mode)
+    if M.cmd.telescope.auto_append then
+        local dup = false
+        for _, v in pairs(M.cmd[ft][mode].extra) do
+            if v == cmd then
+                dup = true
+            end
+        end
+
+        if not dup then
+            table.insert(M.cmd[ft][mode].extra, 1, cmd)
+        end
+    end
+end
+
 M.run_vim = function(args)
     local ft
     ft, _, args = init(args)
 
     vim.cmd("!" .. parse_wildcards(M.cmd[ft].shell.cd .. M.cmd[ft].shell.cmd) .. args)
+    auto_append(M.cmd[ft].shell.cmd .. args, ft, "shell")
 end
 
 local function multiplexer_list_grep(mp, shell)
@@ -145,6 +164,7 @@ M.run_shell = function(args)
         if M.cmd.focus_shell == false then
             vim.fn.system(multiplexer_commands.pane_select[mp] .. tonumber(pane_index) - 1)
         end
+        auto_append(M.cmd[ft].shell.cmd .. args, ft, "shell")
     else
         error("\nNo active multiplexer session!!\n")
     end
@@ -186,6 +206,8 @@ M.run_interactive = function(args)
         if M.cmd.focus_repl == false then
             vim.fn.system(multiplexer_commands.pane_select[mp] .. tonumber(pane_index) - 1)
         end
+
+        auto_append(M.cmd[ft].interactive.cmd .. args, ft, "interactive")
     else
         error("\nNo active multiplexer session!!\n")
     end
@@ -203,10 +225,10 @@ M.run_smart = function(args)
     end
 end
 
-local function concat_args(argv, first, last, inital)
-    local res = inital or ""
+local function concat_args(argv, first, last)
+    local res = ""
     for i = first or 1, last or #argv do
-        res = res .. argv[i] .. " "
+        res = res .. " " .. argv[i]
     end
     return res
 end
@@ -286,15 +308,16 @@ local function enable_telescope()
     end
 
     M.add_to_pickers = function(args)
-        local new_cmd = concat_args(args, 3)
+        local new_cmd = concat_args(args, 3):sub(2)
         table.insert(M.cmd[vim.bo.filetype][args[2]].extra, new_cmd)
         print(new_cmd)
     end
 end
 
+
 M.setup = function(opts)
-    for _, val in pairs(M.cmd) do
-        if type(val) == "table" then
+    for key, val in pairs(M.cmd) do
+        if type(val) == "table" and key ~= "telescope" then
             val.shell.extra = { val.shell.cmd }
             val.interactive.extra = { val.interactive.cmd }
         end
@@ -302,25 +325,9 @@ M.setup = function(opts)
 
     if opts then M.cmd = vim.tbl_deep_extend("force", M.cmd, opts) end
 
-    if M.cmd.telescope then
+    if M.cmd.telescope.enabled then
         enable_telescope()
-    end
 
-    vim.api.nvim_create_user_command("Compal", function(opt)
-            if opt.fargs[1] == "set" then
-                M.set_cmd(opt.fargs)
-            else
-                M["run_" .. opt.fargs[1]](concat_args(opt.fargs, 2, #opt.fargs, " "))
-            end
-        end,
-        {
-            nargs = "*",
-            complete = function()
-                return { "smart", "interactive", "vim", "shell", "set" }
-            end,
-        })
-
-    if M.cmd.telescope then
         vim.api.nvim_create_user_command("CompalPicker", function(opt)
                 if opt.fargs[1] == "add" then
                     M.add_to_pickers(opt.fargs)
@@ -335,6 +342,20 @@ M.setup = function(opts)
                 end,
             })
     end
+
+    vim.api.nvim_create_user_command("Compal", function(opt)
+            if opt.fargs[1] == "set" then
+                M.set_cmd(opt.fargs)
+            else
+                M["run_" .. opt.fargs[1]](concat_args(opt.fargs, 2, #opt.fargs))
+            end
+        end,
+        {
+            nargs = "*",
+            complete = function()
+                return { "smart", "interactive", "vim", "shell", "set" }
+            end,
+        })
     return M
 end
 

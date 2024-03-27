@@ -119,13 +119,17 @@ local compal = require("compal").setup({
             extra = {"%run %f 42", "%run %f 3.14", "%run %f 01011001"},
         },
     },
-    telescope = true,
+    telescope = { 
+        enabled = true,
+    }
 })
 
 vim.keymap.set('n', '<leader>fe', compal.picker_shell)
 vim.keymap.set('n', '<leader>fr', compal.picker_interactive)
 
 ```
+
+You can also `CompalPicker add [shell|interactive] cmd` to add a new command to the list for the current session (e.g.`CompalPicker add shell cargo run --release`). Using the `Compal` command to add arguments appends the new command to the list, unless `telescope.auto_append = false`.
 
 ##  Default Language table
 Any missing language can be added when calling `setup()` using the given format. The is also an `interactive.in_shell [bool]` parameter for each language that defines if the repl should be nested inside a shell, by default only `true` for `ocaml` because `utop` doesn't work otherwise. If you are using an alternative repl (eg. `croissant` for `lua`) and the interactive function fails, try setting this option to true.
