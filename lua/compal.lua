@@ -234,7 +234,16 @@ local function concat_args(argv, first, last)
 end
 
 M.get_cmd = function(args)
-    print(M.cmd[vim.bo.filetype][args[2]][args[3]])
+    local ft = vim.bo.filetype
+    if args[2] == nil then
+        print(vim.inspect(M.cmd[ft]))
+    else
+        if args[3] == nil then
+            print(vim.inspect(M.cmd[ft][args[2]]))
+        else
+            print(M.cmd[ft][args[2]][args[3]])
+        end
+    end
 end
 
 M.set_cmd = function(args)
@@ -314,6 +323,9 @@ local function enable_telescope()
     end
 end
 
+M.toggle_pane = function()
+    vim.fn.system("tmux resize-pane -Z")
+end
 
 M.setup = function(opts)
     for key, val in pairs(M.cmd) do
@@ -344,8 +356,8 @@ M.setup = function(opts)
     end
 
     vim.api.nvim_create_user_command("Compal", function(opt)
-            if opt.fargs[1] == "set" then
-                M.set_cmd(opt.fargs)
+            if opt.fargs[1] == "set" or opt.fargs[1] == "get" then
+                M[opt.fargs[1] .. "_cmd"](opt.fargs)
             else
                 M["run_" .. opt.fargs[1]](concat_args(opt.fargs, 2, #opt.fargs))
             end
@@ -353,7 +365,7 @@ M.setup = function(opts)
         {
             nargs = "*",
             complete = function()
-                return { "smart", "interactive", "vim", "shell", "set" }
+                return { "smart", "interactive", "vim", "shell", "set", "get" }
             end,
         })
     return M

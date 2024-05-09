@@ -27,6 +27,8 @@ The plugin provides 4 functions that execute commands based on the filetype defi
 
 `run_smart`: Defaults to `run_interactive`, with `run_shell` as fallback if filetype doesn't have a repl and `run_vim` as fallback if neovim isn't running inside tmux.
 
+`toggle_pane`: simple command to create a neovim specific keybind to hide the shell pane.
+
 Set keybindings inside `init.lua`
 
 ```lua
@@ -36,13 +38,14 @@ vim.keymap.set("n", "<leader>er", compal.run_interactive)
 vim.keymap.set("n", "<leader>ew", compal.run_shell)
 vim.keymap.set("n", "<leader>ef", compal.run_vim)
 ```
-For programs that take arguments, there is the `Compal [smart | interactive | shell | vim | set] *args` command. For convenience, you can create a keybinding that enters command mode and autofills part of the command.
+For programs that take arguments, there is the `Compal [smart | interactive | shell | vim | set | get] *args` command. For convenience, you can create a keybinding that enters command mode and autofills part of the command.
 
 ```lua
 vim.keymap.set("n", "<leader>ed", ":Compal smart ")
 ```
 
-The `set` options let you change the configuration for the current buffer. For example, `:Compal set shell cmd cmake .` or `:Compal set shell cd` to remove the default cd command, where the filetype is inferred from `vim.bo.filetype`.
+The `set` and `get` options let you check and change the configuration for the current session. For example, `:Compal set shell cmd cmake .` or `:Compal set shell cd` to remove the default cd command, where the filetype is inferred from `vim.bo.filetype`.
+
 
 ## Configuration
 ### Language Configuration
