@@ -72,10 +72,8 @@ local function parse_wildcards(str)
 
     if git_root:gmatch("fatal:")() == nil then
         parsed_command = parsed_command:gsub("%%g", git_root)
-    else
-        if parsed_command:gmatch("%%g")() then
-            error("\nFile is not in a git repository but '%g' was used in the command!!\n")
-        end
+    elseif parsed_command:gmatch("%%g")() then
+        error("\nFile is not in a git repository but '%g' was used in the command!!\n")
     end
 
     return parsed_command
@@ -202,7 +200,6 @@ M.run_interactive = function(args)
 
         vim.fn.system(string.format(multiplexer_commands.send_keys[mp],
             parse_wildcards(M.cmd[ft].interactive.cmd) .. args))
-
         if M.cmd.focus_repl == false then
             vim.fn.system(multiplexer_commands.pane_select[mp] .. tonumber(pane_index) - 1)
         end
@@ -237,12 +234,10 @@ M.get_cmd = function(args)
     local ft = vim.bo.filetype
     if args[2] == nil then
         print(vim.inspect(M.cmd[ft]))
+    elseif args[3] == nil then
+        print(vim.inspect(M.cmd[ft][args[2]]))
     else
-        if args[3] == nil then
-            print(vim.inspect(M.cmd[ft][args[2]]))
-        else
-            print(M.cmd[ft][args[2]][args[3]])
-        end
+        print(M.cmd[ft][args[2]][args[3]])
     end
 end
 
@@ -263,15 +258,18 @@ local function enable_telescope()
     M.picker_shell = function()
         local opts = themes.get_dropdown {}
         local ft = vim.bo.filetype
+        if M.cmd[ft] == nil then
+            error("\nFiletype not supported!! It can be added in init.lua.\n")
+        end
 
         pickers.new(opts, {
-            prompt_title = "Shell commands",
+            prompt_title = "Compal Shell",
             finder = finders.new_table {
                 results = M.cmd[ft].shell.extra
             },
             sorter = conf.generic_sorter(opts),
 
-            attach_mappings = function(prompt_bufnr)
+            attach_mappings = function(prompt_bufnr, map)
                 actions.select_default:replace(function()
                     actions.close(prompt_bufnr)
                     local selection = action_state.get_selected_entry()
@@ -281,6 +279,15 @@ local function enable_telescope()
                         M.set_cmd({ "set", "shell", "cmd", selection[1] })
                         M.run_shell()
                         M.set_cmd({ "set", "shell", "cmd", old_command })
+                    end
+                end)
+                map("i", "<C-Enter>",function()
+                    actions.close(prompt_bufnr)
+                    local selection = action_state.get_selected_entry()
+
+                    if selection[1] ~= nil then
+                        M.set_cmd({ "set", "shell", "cmd", selection[1] })
+                        M.run_shell()
                     end
                 end)
                 return true
@@ -293,13 +300,13 @@ local function enable_telescope()
         local ft = vim.bo.filetype
 
         pickers.new(opts, {
-            prompt_title = "interactive commands",
+            prompt_title = "Compal Interactive",
             finder = finders.new_table {
                 results = M.cmd[ft].interactive.extra
             },
             sorter = conf.generic_sorter(opts),
 
-            attach_mappings = function(prompt_bufnr)
+            attach_mappings = function(prompt_bufnr, map)
                 actions.select_default:replace(function()
                     actions.close(prompt_bufnr)
                     local selection = action_state.get_selected_entry()
@@ -309,6 +316,15 @@ local function enable_telescope()
                         M.set_cmd({ "set", "interactive", "cmd", selection[1] })
                         M.run_interactive()
                         M.set_cmd({ "set", "interactive", "cmd", old_command })
+                    end
+                end)
+                map("i", "<C-Enter>",function()
+                    actions.close(prompt_bufnr)
+                    local selection = action_state.get_selected_entry()
+
+                    if selection[1] ~= nil then
+                        M.set_cmd({ "set", "shell", "cmd", selection[1] })
+                        M.run_interactive()
                     end
                 end)
                 return true
@@ -321,10 +337,6 @@ local function enable_telescope()
         table.insert(M.cmd[vim.bo.filetype][args[2]].extra, new_cmd)
         print(new_cmd)
     end
-end
-
-M.toggle_pane = function()
-    vim.fn.system("tmux resize-pane -Z")
 end
 
 M.setup = function(opts)
