@@ -1,5 +1,5 @@
 local M = {}
-M.cmd = {
+M.conf = {
     c = { shell = { cd = "cd %g;", cmd = "make", }, interactive = { repl = nil, title = "", cmd = "", in_shell = false } },
     rust = { shell = { cd = "cd %g;", cmd = "cargo run", extra = { "cargo build --release", "cargo build", "rustc %f" } }, interactive = { repl = nil, title = "", cmd = "", in_shell = false } },
     cpp = { shell = { cd = "cd %g;", cmd = "make" }, interactive = { repl = nil, title = "", cmd = "", in_shell = false } },
@@ -22,7 +22,10 @@ M.cmd = {
     clojure = { shell = { cd = "", cmd = "clj -M %f" }, interactive = { repl = "clj", title = "rlwrap", cmd = '(load-file "%f")', in_shell = false } },
     go = { shell = { cd = "cd %g;", cmd = "go run ." }, interactive = { repl = nil, title = "", cmd = "", in_shell = false } },
     dart = { shell = { cd = "cd %g;", cmd = "dart run" }, interactive = { repl = nil, title = "", cmd = "", in_shell = false } },
-    split = "tmux split -v",
+    split = nil,
+    tmux_split = "tmux split -v",
+    builtin_split = "split",
+    prefer_tmux = true,
     save = true,
     focus_shell = true,
     focus_repl = true,
@@ -55,11 +58,11 @@ local function init(args)
         mp = "zellij"
     end
 
-    if M.cmd[ft] == nil then
+    if M.conf[ft] == nil then
         error("\nFiletype not supported!! It can be added in init.lua.\n")
     end
 
-    if M.cmd.save then
+    if M.conf.save then
         vim.cmd("w")
     end
     return ft, mp, args or ""
@@ -80,30 +83,78 @@ local function parse_wildcards(str)
 end
 
 local function auto_append(cmd, ft, mode)
-    if M.cmd.telescope.auto_append then
+    if M.conf.telescope.auto_append then
         local dup = false
-        for _, v in pairs(M.cmd[ft][mode].extra) do
+        for _, v in pairs(M.conf[ft][mode].extra) do
             if v == cmd then
                 dup = true
             end
         end
 
         if not dup then
-            table.insert(M.cmd[ft][mode].extra, 1, cmd)
+            table.insert(M.conf[ft][mode].extra, 1, cmd)
         end
     end
 end
 
-M.run_vim = function(args)
+local terminal = false
+local term_win = 0
+local repl_info = nil
+M.builtin_shell = function(insert, args)
+    local i = insert or "i"
     local ft
     ft, _, args = init(args)
 
-    vim.cmd("!" .. parse_wildcards(M.cmd[ft].shell.cd .. M.cmd[ft].shell.cmd) .. args)
-    auto_append(M.cmd[ft].shell.cmd .. args, ft, "shell")
+    local cmd = parse_wildcards(M.conf[ft].shell.cd .. M.conf[ft].shell.cmd) .. args
+
+    if terminal then
+        vim.api.nvim_set_current_win(term_win)
+    else
+        if M.conf.window then
+            vim.cmd("tabnew")
+        else
+            vim.cmd("split")
+        end
+        vim.cmd("terminal")
+
+        term_win = vim.api.nvim_get_current_win()
+    end
+
+    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(i .. cmd .. "<Enter>", true, false, true), "n", true)
+    auto_append(M.conf[ft].shell.cmd .. args, ft, "shell")
+end
+
+M.builtin_interactive = function(insert, args)
+    local i = insert or "i"
+    local ft
+    ft, _, args = init(args)
+
+    local cmd = parse_wildcards(M.conf[ft].interactive.cmd) .. args
+
+    if terminal then
+        vim.api.nvim_set_current_win(term_win)
+        if M.conf.override_shell and repl_info ~= M.conf[ft].interactive.title then
+            repl_info = M.conf[ft].interactive.title
+            cmd = M.conf[ft].interactive.repl .. "<Enter>" .. cmd
+        end
+    else
+        if M.conf.window then
+            vim.cmd("tabnew")
+        else
+            vim.cmd("split")
+        end
+        vim.cmd("terminal " .. M.conf[ft].interactive.repl)
+        repl_info = M.conf[ft].interactive.title
+
+        term_win = vim.api.nvim_get_current_win()
+    end
+
+    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(i .. cmd .. "<Enter>", true, false, true), "n", true)
+    auto_append(M.conf[ft].shell.cmd .. args, ft, "shell")
 end
 
 local function multiplexer_list_grep(mp, shell)
-    if M.cmd.window then
+    if M.conf.window then
         return vim.fn.system(
             multiplexer_commands.window_list_grep[mp] ..
             shell .. " 1'")
@@ -113,7 +164,7 @@ local function multiplexer_list_grep(mp, shell)
 end
 
 local function multiplexer_select(mp, index)
-    if M.cmd.window then
+    if M.conf.window then
         vim.fn.system(multiplexer_commands.window_select[mp] .. index)
     else
         vim.fn.system(multiplexer_commands.pane_select[mp] .. index)
@@ -121,17 +172,17 @@ local function multiplexer_select(mp, index)
 end
 
 local function multiplexer_new_pane(ft, mp, interactive)
-    local new_pane = M.cmd.split
-    if M.cmd.window then
+    local new_pane = M.conf.split or M.conf.tmux_split
+    if M.conf.window then
         new_pane = multiplexer_commands.new_window[mp]
     end
 
     local repl = ""
     if interactive then
-        repl = M.cmd[ft].interactive.repl
+        repl = M.conf[ft].interactive.repl
     end
 
-    if M.cmd[ft].interactive.in_shell then
+    if M.conf[ft].interactive.in_shell then
         vim.fn.system(new_pane)
         vim.fn.system(string.format(multiplexer_commands.send_keys[mp], repl))
     else
@@ -139,7 +190,7 @@ local function multiplexer_new_pane(ft, mp, interactive)
     end
 end
 
-M.run_shell = function(args)
+M.multiplexer_shell = function(args)
     local ft
     local mp
     ft, mp, args = init(args)
@@ -157,37 +208,37 @@ M.run_shell = function(args)
         end
 
         vim.fn.system(string.format(multiplexer_commands.send_keys[mp],
-            parse_wildcards(M.cmd[ft].shell.cd .. M.cmd[ft].shell.cmd) .. args))
+            parse_wildcards(M.conf[ft].shell.cd .. M.conf[ft].shell.cmd) .. args))
 
-        if M.cmd.focus_shell == false then
+        if M.conf.focus_shell == false then
             vim.fn.system(multiplexer_commands.pane_select[mp] .. tonumber(pane_index) - 1)
         end
-        auto_append(M.cmd[ft].shell.cmd .. args, ft, "shell")
+        auto_append(M.conf[ft].shell.cmd .. args, ft, "shell")
     else
         error("\nNo active multiplexer session!!\n")
     end
 end
 
-M.run_interactive = function(args)
+M.multiplexer_interactive = function(args)
     local ft
     local mp
     ft, mp, args = init(args)
 
     if mp then
-        local repl_pane = multiplexer_list_grep(mp, M.cmd[ft].interactive.title)
+        local repl_pane = multiplexer_list_grep(mp, M.conf[ft].interactive.title)
         local pane_index
 
         if repl_pane ~= "" then
             pane_index = repl_pane:gmatch("%w+")()
             multiplexer_select(mp, pane_index)
         else
-            if M.cmd.override_shell then
+            if M.conf.override_shell then
                 local sh_pane = multiplexer_list_grep(mp, "sh")
 
                 if sh_pane ~= "" then
                     pane_index = sh_pane:gmatch("%w+")()
                     multiplexer_select(mp, pane_index)
-                    vim.fn.system(string.format(multiplexer_commands.send_keys[mp], M.cmd[ft].interactive.repl))
+                    vim.fn.system(string.format(multiplexer_commands.send_keys[mp], M.conf[ft].interactive.repl))
                 else
                     pane_index = tonumber(vim.fn.system(multiplexer_commands.pane_index[mp])) + 1
                     multiplexer_new_pane(ft, mp, true)
@@ -199,26 +250,47 @@ M.run_interactive = function(args)
         end
 
         vim.fn.system(string.format(multiplexer_commands.send_keys[mp],
-            parse_wildcards(M.cmd[ft].interactive.cmd) .. args))
-        if M.cmd.focus_repl == false then
+            parse_wildcards(M.conf[ft].interactive.cmd) .. args))
+        if M.conf.focus_repl == false then
             vim.fn.system(multiplexer_commands.pane_select[mp] .. tonumber(pane_index) - 1)
         end
 
-        auto_append(M.cmd[ft].interactive.cmd .. args, ft, "interactive")
+        auto_append(M.conf[ft].interactive.cmd .. args, ft, "interactive")
     else
         error("\nNo active multiplexer session!!\n")
     end
 end
 
-M.run_smart = function(args)
-    if os.getenv("TMUX") or os.getenv("ZELLIJ") then
-        if M.cmd[vim.bo.filetype] and M.cmd[vim.bo.filetype].interactive.repl then
-            M.run_interactive(args)
-        else
-            M.run_shell(args)
-        end
+M.run_vim = function()
+    vim.notify("compal.run_vim is deprecated, remove the keybinding to avoid breaking when it is removed.",
+        vim.log.levels.WARN)
+end
+
+M.run_shell = function(i, args)
+    if M.conf.prefer_tmux then
+        M.multiplexer_shell(args)
     else
-        M.run_vim(args)
+        M.builtin_shell(i, args)
+    end
+end
+
+M.run_interactive = function(i, args)
+    if M.conf.prefer_tmux then
+        M.multiplexer_interactive(args)
+    else
+        M.builtin_interactive(i, args)
+    end
+end
+
+M.run_smart = function(args)
+    if not os.getenv("TMUX") then
+        M.conf.prefer_tmux = false
+    end
+
+    if M.conf[vim.bo.filetype] and M.conf[vim.bo.filetype].interactive.repl then
+        M.run_interactive("i", args)
+    else
+        M.run_shell("i", args)
     end
 end
 
@@ -233,17 +305,24 @@ end
 M.get_cmd = function(args)
     local ft = vim.bo.filetype
     if args[2] == nil then
-        print(vim.inspect(M.cmd[ft]))
+        print(vim.inspect(M.conf[ft]))
     elseif args[3] == nil then
-        print(vim.inspect(M.cmd[ft][args[2]]))
+        print(vim.inspect(M.conf[ft][args[2]]))
     else
-        print(M.cmd[ft][args[2]][args[3]])
+        print(M.conf[ft][args[2]][args[3]])
     end
 end
 
 M.set_cmd = function(args)
-    local new_cmd = concat_args(args, 4):sub(2)
-    M.cmd[vim.bo.filetype][args[2]][args[3]] = new_cmd
+    local ft = vim.bo.filetype
+    local new_cmd
+    if ft ~= "" and ft ~= args[2] then
+        new_cmd = concat_args(args, 4):sub(2)
+        M.conf[ft][args[2]][args[3]] = new_cmd
+    else
+        new_cmd = concat_args(args, 5):sub(2)
+        M.conf[args[2]][args[3]][args[4]] = new_cmd
+    end
     print(new_cmd)
 end
 
@@ -258,14 +337,14 @@ local function enable_telescope()
     M.picker_shell = function()
         local opts = themes.get_dropdown {}
         local ft = vim.bo.filetype
-        if M.cmd[ft] == nil then
+        if M.conf[ft] == nil then
             error("\nFiletype not supported!! It can be added in init.lua.\n")
         end
 
         pickers.new(opts, {
             prompt_title = "Compal Shell",
             finder = finders.new_table {
-                results = M.cmd[ft].shell.extra
+                results = M.conf[ft].shell.extra
             },
             sorter = conf.generic_sorter(opts),
 
@@ -275,19 +354,19 @@ local function enable_telescope()
                     local selection = action_state.get_selected_entry()
 
                     if selection[1] ~= nil then
-                        local old_command = M.cmd[ft].shell.cmd
+                        local old_command = M.conf[ft].shell.cmd
                         M.set_cmd({ "set", "shell", "cmd", selection[1] })
-                        M.run_shell()
-                        M.set_cmd({ "set", "shell", "cmd", old_command })
+                        M.run_shell("")
+                        M.set_cmd({ "set", ft, "shell", "cmd", old_command })
                     end
                 end)
-                map("i", "<C-Enter>",function()
+                map("i", "<C-Enter>", function()
                     actions.close(prompt_bufnr)
                     local selection = action_state.get_selected_entry()
 
                     if selection[1] ~= nil then
                         M.set_cmd({ "set", "shell", "cmd", selection[1] })
-                        M.run_shell()
+                        M.run_shell("")
                     end
                 end)
                 return true
@@ -302,7 +381,7 @@ local function enable_telescope()
         pickers.new(opts, {
             prompt_title = "Compal Interactive",
             finder = finders.new_table {
-                results = M.cmd[ft].interactive.extra
+                results = M.conf[ft].interactive.extra
             },
             sorter = conf.generic_sorter(opts),
 
@@ -312,19 +391,19 @@ local function enable_telescope()
                     local selection = action_state.get_selected_entry()
 
                     if selection[1] ~= nil then
-                        local old_command = M.cmd[ft].interactive.cmd
+                        local old_command = M.conf[ft].interactive.cmd
                         M.set_cmd({ "set", "interactive", "cmd", selection[1] })
-                        M.run_interactive()
-                        M.set_cmd({ "set", "interactive", "cmd", old_command })
+                        M.run_interactive("")
+                        M.set_cmd({ "set", ft, "interactive", "cmd", old_command })
                     end
                 end)
-                map("i", "<C-Enter>",function()
+                map("i", "<C-Enter>", function()
                     actions.close(prompt_bufnr)
                     local selection = action_state.get_selected_entry()
 
                     if selection[1] ~= nil then
-                        M.set_cmd({ "set", "shell", "cmd", selection[1] })
-                        M.run_interactive()
+                        M.set_cmd({ "set", "interactive", "cmd", selection[1] })
+                        M.run_interactive("")
                     end
                 end)
                 return true
@@ -334,22 +413,22 @@ local function enable_telescope()
 
     M.add_to_pickers = function(args)
         local new_cmd = concat_args(args, 3):sub(2)
-        table.insert(M.cmd[vim.bo.filetype][args[2]].extra, new_cmd)
+        table.insert(M.conf[vim.bo.filetype][args[2]].extra, new_cmd)
         print(new_cmd)
     end
 end
 
 M.setup = function(opts)
-    for key, val in pairs(M.cmd) do
+    for key, val in pairs(M.conf) do
         if type(val) == "table" and key ~= "telescope" then
             val.shell.extra = { val.shell.cmd }
             val.interactive.extra = { val.interactive.cmd }
         end
     end
 
-    if opts then M.cmd = vim.tbl_deep_extend("force", M.cmd, opts) end
+    if opts then M.conf = vim.tbl_deep_extend("force", M.conf, opts) end
 
-    if M.cmd.telescope.enabled then
+    if M.conf.telescope.enabled then
         enable_telescope()
 
         vim.api.nvim_create_user_command("CompalPicker", function(opt)
@@ -377,9 +456,22 @@ M.setup = function(opts)
         {
             nargs = "*",
             complete = function()
-                return { "smart", "interactive", "vim", "shell", "set", "get" }
+                return { "smart", "interactive", "shell", "set", "get" }
             end,
         })
+
+    vim.api.nvim_create_autocmd({ "TermOpen" }, {
+        callback = function()
+            terminal = true
+        end
+    })
+
+    vim.api.nvim_create_autocmd({ "TermClose" }, {
+        callback = function()
+            terminal = false
+            repl_info = nil
+        end
+    })
     return M
 end
 
