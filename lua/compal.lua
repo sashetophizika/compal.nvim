@@ -100,12 +100,13 @@ end
 local terminal = false
 local term_win = 0
 local repl_info = nil
+M.conf.prefer_tmux = false
 M.builtin_shell = function(insert, args)
     local i = insert or "i"
     local ft
     ft, _, args = init(args)
 
-    local cmd = parse_wildcards(M.conf[ft].shell.cd .. M.conf[ft].shell.cmd) .. args
+    local cmd = parse_wildcards(M.conf[ft].shell.cd .. M.conf[ft].shell.cmd) .. args .. "<Enter>"
 
     if terminal then
         vim.api.nvim_set_current_win(term_win)
@@ -120,7 +121,11 @@ M.builtin_shell = function(insert, args)
         term_win = vim.api.nvim_get_current_win()
     end
 
-    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(i .. cmd .. "<Enter>", true, false, true), "n", true)
+    if not M.conf.focus_shell then
+        cmd = cmd .. "<C-\\><C-n><C-w><C-w>"
+    end
+
+    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(i .. cmd, true, false, true), "n", true)
     auto_append(M.conf[ft].shell.cmd .. args, ft, "shell")
 end
 
@@ -129,7 +134,7 @@ M.builtin_interactive = function(insert, args)
     local ft
     ft, _, args = init(args)
 
-    local cmd = parse_wildcards(M.conf[ft].interactive.cmd) .. args
+    local cmd = parse_wildcards(M.conf[ft].interactive.cmd) .. args .. "<Enter>"
 
     if terminal then
         vim.api.nvim_set_current_win(term_win)
@@ -149,7 +154,11 @@ M.builtin_interactive = function(insert, args)
         term_win = vim.api.nvim_get_current_win()
     end
 
-    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(i .. cmd .. "<Enter>", true, false, true), "n", true)
+    if not M.conf.focus_repl then
+        cmd = cmd .. "<C-\\><C-n><C-w><C-w>"
+    end
+
+    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(i .. cmd, true, false, true), "n", true)
     auto_append(M.conf[ft].shell.cmd .. args, ft, "shell")
 end
 
@@ -172,9 +181,11 @@ local function multiplexer_select(mp, index)
 end
 
 local function multiplexer_new_pane(ft, mp, interactive)
-    local new_pane = M.conf.split or M.conf.tmux_split
+    local new_pane
     if M.conf.window then
         new_pane = multiplexer_commands.new_window[mp]
+    else
+        new_pane = M.conf.split or M.conf.tmux_split
     end
 
     local repl = ""
@@ -334,6 +345,30 @@ local function enable_telescope()
     local action_state = require "telescope.actions.state"
     local conf = require("telescope.config").values
 
+    local function attatch_mappings(prompt_bufnr, map, mode, ft)
+        actions.select_default:replace(function()
+            actions.close(prompt_bufnr)
+            local selection = action_state.get_selected_entry()
+
+            if selection[1] ~= nil then
+                local old_command = M.conf[ft][mode].cmd
+                M.set_cmd({ "set", mode, "cmd", selection[1] })
+                M["run_" .. mode]("")
+                M.set_cmd({ "set", ft, mode, "cmd", old_command })
+            end
+        end)
+        map("i", "<C-Enter>", function()
+            actions.close(prompt_bufnr)
+            local selection = action_state.get_selected_entry()
+
+            if selection[1] ~= nil then
+                M.set_cmd({ "set", mode, "cmd", selection[1] })
+                M["run_" .. mode]("")
+            end
+        end)
+        return true
+    end
+
     M.picker_shell = function()
         local opts = themes.get_dropdown {}
         local ft = vim.bo.filetype
@@ -348,28 +383,8 @@ local function enable_telescope()
             },
             sorter = conf.generic_sorter(opts),
 
-            attach_mappings = function(prompt_bufnr, map)
-                actions.select_default:replace(function()
-                    actions.close(prompt_bufnr)
-                    local selection = action_state.get_selected_entry()
-
-                    if selection[1] ~= nil then
-                        local old_command = M.conf[ft].shell.cmd
-                        M.set_cmd({ "set", "shell", "cmd", selection[1] })
-                        M.run_shell("")
-                        M.set_cmd({ "set", ft, "shell", "cmd", old_command })
-                    end
-                end)
-                map("i", "<C-Enter>", function()
-                    actions.close(prompt_bufnr)
-                    local selection = action_state.get_selected_entry()
-
-                    if selection[1] ~= nil then
-                        M.set_cmd({ "set", "shell", "cmd", selection[1] })
-                        M.run_shell("")
-                    end
-                end)
-                return true
+            attach_mappings = function(prompt_buffer, map)
+                return attatch_mappings(prompt_buffer, map, "shell", ft)
             end,
         }):find()
     end
@@ -386,27 +401,7 @@ local function enable_telescope()
             sorter = conf.generic_sorter(opts),
 
             attach_mappings = function(prompt_bufnr, map)
-                actions.select_default:replace(function()
-                    actions.close(prompt_bufnr)
-                    local selection = action_state.get_selected_entry()
-
-                    if selection[1] ~= nil then
-                        local old_command = M.conf[ft].interactive.cmd
-                        M.set_cmd({ "set", "interactive", "cmd", selection[1] })
-                        M.run_interactive("")
-                        M.set_cmd({ "set", ft, "interactive", "cmd", old_command })
-                    end
-                end)
-                map("i", "<C-Enter>", function()
-                    actions.close(prompt_bufnr)
-                    local selection = action_state.get_selected_entry()
-
-                    if selection[1] ~= nil then
-                        M.set_cmd({ "set", "interactive", "cmd", selection[1] })
-                        M.run_interactive("")
-                    end
-                end)
-                return true
+                return attatch_mappings(prompt_bufnr, map, "interactive", ft)
             end,
         }):find()
     end
