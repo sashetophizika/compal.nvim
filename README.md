@@ -97,7 +97,7 @@ local compal = require("compal").setup({
             cmd = "%run %f",
         },
     },
-    split = "tmux split -v -p 40 -c #{pane_current_path}",
+    tmux_split = "tmux split -v -p 40 -c #{pane_current_path}",
     focus_shell = false,
 })
 ```
