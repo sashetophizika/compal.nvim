@@ -40,7 +40,7 @@ local function parse_wildcards(str)
 
     if git_root:gmatch("fatal:")() == nil then
         parsed_command = parsed_command:gsub("%%g", git_root)
-    elseif parsed_command:gmatch("%%g")() then
+    elseif parsed_command:gmatch("%g")() then
         error("\nFile is not in a git repository but '%g' was used in the command!!\n")
     end
 

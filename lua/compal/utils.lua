@@ -39,4 +39,18 @@ M.add_to_pickers = function(args)
     print(new_cmd)
 end
 
+M.extend_conf = function (t1, t2)
+    for k, v in pairs(t2) do
+        if type(v) == "table" then
+            if type(t1[k]) == "table" then
+                M.extend_conf(t1[k], v)
+            else
+                t1[k] = v
+            end
+        else
+            t1[k] = v
+        end
+    end
+end
+
 return M

@@ -1,7 +1,6 @@
 local M = {}
 
 local runners = require("compal.runners")
-local conf = require("compal.config")
 local utils = require("compal.utils")
 
 local has_telescope, _ = pcall(require, "telescope")

@@ -18,7 +18,7 @@ M.setup = function(opts)
         end
     end
 
-    if opts then conf = vim.tbl_deep_extend("force", conf, opts) end
+    if opts then utils.extend_conf(conf, opts) end
 
     if conf.telescope.enabled then
         local telescope = require("compal.telecompal")
@@ -26,16 +26,12 @@ M.setup = function(opts)
         M.picker_interactive = telescope.picker_interactive
 
         vim.api.nvim_create_user_command("CompalPicker", function(opt)
-                if opt.fargs[1] == "add" then
-                    M.add_to_pickers(opt.fargs)
-                else
-                    M["picker_" .. opt.fargs[1]]()
-                end
+                M["picker_" .. opt.fargs[1]]()
             end,
             {
                 nargs = "*",
                 complete = function()
-                    return { "shell", "interactive", "add" }
+                    return { "shell", "interactive" }
                 end,
             })
     end
@@ -43,6 +39,8 @@ M.setup = function(opts)
     vim.api.nvim_create_user_command("Compal", function(opt)
             if opt.fargs[1] == "set" or opt.fargs[1] == "get" then
                 utils[opt.fargs[1] .. "_cmd"](opt.fargs)
+            elseif opt.fargs[1] == "add" then
+                M.add_to_pickers(opt.fargs)
             else
                 runners["run_" .. opt.fargs[1]](utils.concat_args(opt.fargs, 2, #opt.fargs))
             end
@@ -50,11 +48,11 @@ M.setup = function(opts)
         {
             nargs = "*",
             complete = function()
-                return { "smart", "interactive", "shell", "set", "get" }
+                return { "smart", "interactive", "shell", "set", "get", "add" }
             end,
         })
 
-        runners.create_autocmds()
+    runners.create_autocmds()
     return M
 end
 
