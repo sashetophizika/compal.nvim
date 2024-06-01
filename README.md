@@ -42,7 +42,7 @@ The `set` and `get` options let you check and change the configuration for the c
 
 ## Configuration
 ### Language Configuration
-The configuration for each language is a table of the form
+The configuration for each language is a table of the form:
 
 ```lua
 filetype = { 
@@ -59,14 +59,14 @@ filetype = {
 
 ```
 
-The `cmd` and `cd` options allow the use of some wildcards. When using `cd` make sure to end the command with `;` or `&&` or it would not work. The `interactive.title` field is there because of certain repls have a title different from the command like `ghci` where the title is `ghc` and `ipython` where the title is `python`.
+The `cmd` and `cd` options allow the use of some wildcards. When using `cd` make sure to end the command with `;` or `&&` or it would not work. The `interactive.title` field is there because certain repls have a title different from the command like `ghci` where the title is `ghc` and `ipython` where the title is `python`.
 
 | Wildcard | Description
 |----------|------------|
-| `%f` | filename with full path
-| `%s` | filename with full path and truncated extension
-| `%h` | full path to parent directory of current buffer
-| `%g` | full path to git root directory if it exists
+| `%f`     | filename with full path
+| `%s`     | filename with full path and truncated extension
+| `%h`     | full path to parent directory of current buffer
+| `%g`     | full path to git root directory if it exists
 
 ### Global Options
 | Option | Default | Description
@@ -103,7 +103,14 @@ local compal = require("compal").setup({
 ```
 
 ## Telescope Integration
-If you have [telescope](https://github.com/nvim-telescope/telescope.nvim) installed and set `telescope = { enabled = true }` in your setup, you can add an `extra` argument to the `shell` and `interactive` tables of a language and use the `picker_shell` and `picker_interactive` to spawn a menu with extra commands and and execute them instead of the normal one. For example:
+If you have [telescope](https://github.com/nvim-telescope/telescope.nvim) installed, you can use it to spawn a dropdown menu with extra commands to choose from. First register the telescope extension:
+
+```lua
+require("telescope").load_extension('compal')
+local compal_telescope = require('telescope').extensions.compal
+```
+
+Then enable telescope in your setup and create tables for extra commands: 
 
 ```lua
 local compal = require("compal").setup({
@@ -123,38 +130,296 @@ local compal = require("compal").setup({
     }
 })
 
-vim.keymap.set('n', '<leader>fe', compal.picker_shell)
-vim.keymap.set('n', '<leader>fr', compal.picker_interactive)
+vim.keymap.set('n', '<leader>fe', compal_telescope.shell)
+vim.keymap.set('n', '<leader>fr', compal_telescope.interactive)
 
 ```
 
-You can also `CompalPicker add [shell|interactive] cmd` to add a new command to the list for the current session (e.g.`CompalPicker add shell cargo run --release`). Using the `Compal` command to add arguments appends the new command to the list, unless `telescope.auto_append = false`. To set the selected command as default for the session, use `<C-Enter>` when selecting.
+You can also `Compal add [shell|interactive] cmd` to add a new command to the list for the current session (e.g.`Compal add shell cargo run --release`). Using the `Compal` command to add arguments appends the new command to the list, unless `telescope.auto_append = false`. To set the selected command as default for the session, use `<C-s>` when selecting.
 
 ##  Default Language table
 Any missing language can be added when calling `setup()` using the given format. The is also an `interactive.in_shell [bool]` parameter for each language that defines if the repl should be nested inside a shell, by default only `true` for `ocaml` because `utop` doesn't work otherwise. If you are using an alternative repl (eg. `croissant` for `lua`) and the interactive function fails, try setting this option to true.
 
-| Language      | Shell                                                             | Interactive
-| ---------     | --------                                                          | -----------
-| `bash`        | `cd = ""`         `cmd = "bash %f"`                               | `repl = nil`            `title = ""`           `cmd = ""`               
-| `c`           | `cd = "cd %g;"`   `cmd = "make"`                                  | `repl = nil`            `title = ""`           `cmd = ""`               
-| `cpp`         | `cd = "cd %g;"`   `cmd = "make"`                                  | `repl = nil`            `title = ""`           `cmd = ""`               
-| `cs`          | `cd = "cd %g;"`   `cmd = "dotnet run"`                            | `repl = nil`            `title = ""`           `cmd = ""`               
-| `clojure`     | `cd = ""`         `cmd = "clj -M %f"`                             | `repl = "clj"`          `title = "clj"`        `cmd = 'load-file "%f"'` 
-| `dart`        | `cd = "cd %g;"`   `cmd = "dart run"`                              | `repl = nil`            `title = ""`           `cmd = ""`               
-| `elixir`      | `cd = "cd %g;"`   `cmd = "mix compile"`                           | `repl = "iex -S mix"`   `title = "beam.smp"`   `cmd = "recompile()"`    
-| `go`          | `cd = "cd %g;"`   `cmd = "go run ."`                              | `repl = nil`            `title = ""`           `cmd = ""`               
-| `haskell`     | `cd = "cd %g;"`   `cmd = "cabal run"`                             | `repl = "ghci"`         `title = "ghc"`        `cmd = ":l %f"`          
-| `java`        | `cd = ""`         `cmd = "javac %f"`                              | `repl = nil`            `title = ""`           `cmd = ""`               
-| `javascript`  | `cd = ""`         `cmd = "node %f"`                               | `repl = nil`            `title = ""`           `cmd = ""`               
-| `julia`       | `cd = ""`         `cmd = "julia %f"`                              | `repl = "julia"`        `title = "julia"`      `cmd = 'include("%f")'`  
-| `kotlin`      | `cd = ""`         `cmd = "kotlinc %f"`                            | `repl = nil`            `title = ""`           `cmd = ""`               
-| `lua`         | `cd = ""`         `cmd = "lua %f"`                                | `repl = "lua"`          `title = "lua"`        `cmd = 'dofile("%f")'`   
-| `ocaml`       | `cd = "cd %g;"`   `cmd = "dune build; dune exec $(basename %g)"`  | `repl = "dune utop"`    `title = "utop"`       `cmd = ""`               
-| `php`         | `cd = ""`         `cmd = "php %f"`                                | `repl = nil`            `title = ""`           `cmd = ""`               
-| `python`      | `cd = ""`         `cmd = "python %f"`                             | `repl = "ipython"`      `title = "python"`     `cmd = "%run %f"`        
-| `ruby`        | `cd = ""`         `cmd = "ruby %f"`                               | `repl = "irb"`          `title = "irb"`        `cmd = 'require "%f"'`   
-| `rust`        | `cd = "cd %g;"`   `cmd = "cargo run"`                             | `repl = nil`            `title = ""`           `cmd = ""`               
-| `tex`         | `cd = ""`         `cmd = "pdflatex %f"`                           | `repl = nil`            `title = ""`           `cmd = ""`               
-| `typescript`  | `cd = ""`         `cmd = "npx tsc %f"`                            | `repl = nil`            `title = ""`           `cmd = ""`               
-| `zig`         | `cd = "cd %g;"`   `cmd = "zig build run"`                         | `repl = nil`            `title = ""`           `cmd = ""`               
+```lua
+return {
+    c = {
+        shell = {
+            cd = "cd %g;",
+            cmd = "make",
+        },
+        interactive = {
+            repl = nil,
+            title = "",
+            cmd = "",
+            in_shell = false
+        }
+    },
+    rust = {
+        shell = {
+            cd = "cd %g;",
+            cmd = "cargo run",
+            extra = { "cargo build --release", "cargo build", "rustc %f" }
+        },
+        interactive = {
+            repl = nil,
+            title = "",
+            cmd = "",
+            in_shell = false
+        }
+    },
+    cpp = {
+        shell = {
+            cd = "cd %g;",
+            cmd = "make"
+        },
+        interactive = {
+            repl = nil,
+            title = "",
+            cmd = "",
+            in_shell = false
+        }
+    },
+    julia = {
+        shell = {
+            cd = "",
+            cmd = "julia %f"
+        },
+        interactive = {
+            repl = "julia",
+            title = "julia",
+            cmd = 'include("%f")',
+            in_shell = false
+        }
+    },
+    python = {
+        shell = {
+            cd = "",
+            cmd = "python %f"
+        },
+        interactive = {
+            repl = "ipython",
+            title = "python",
+            cmd = "%run %f",
+            in_shell = nil
+        }
+    },
+    sh = {
+        shell = {
+            cd = "",
+            cmd = "bash %f"
+        },
+        interactive = {
+            repl = nil,
+            title = "",
+            cmd = "",
+            in_shell = false
+        }
+    },
+    cs = {
+        shell = {
+            cd = "cd %g;",
+            cmd = "dotnet run"
+        },
+        interactive = {
+            repl = nil,
+            title = "",
+            cmd = "",
+            in_shell = false
+        }
+    },
+    php = {
+        shell = {
+            cd = "",
+            cmd = "php %f"
+        },
+        interactive = {
+            repl = nil,
+            title = "",
+            cmd = "",
+            in_shell = false
+        }
+    },
+    haskell = {
+        shell = {
+            cd = "cd %g",
+            cmd = "cabal run"
+        },
+        interactive = {
+            repl = "ghci",
+            title = "ghc",
+            cmd = ":l %f",
+            in_shell = false
+        }
+    },
+    lua = {
+        shell = {
+            cd = "",
+            cmd = "lua %f"
+        },
+        interactive = {
+            repl = "lua",
+            title = "lua",
+            cmd = "dofile(\"%f\")",
+            in_shell = false
+        }
+    },
+    java = {
+        shell = {
+            cd = "",
+            cmd = "javac %f"
+        },
+        interactive = {
+            repl = nil,
+            title = "",
+            cmd = "",
+            in_shell = false
+        }
+    },
+    javascript = {
+        shell = {
+            cd = "",
+            cmd = "node %f"
+        },
+        interactive = {
+            repl = nil,
+            title = "",
+            cmd = "",
+            in_shell = false
+        }
+    },
+    ruby = {
+        shell = {
+            cd = "",
+            cmd = "ruby %f"
+        },
+        interactive = {
+            repl = "irb",
+            title = "irb",
+            cmd = 'require "%f"',
+            in_shell = false
+        }
+    },
+    tex = {
+        shell = {
+            cd = "",
+            cmd = "pdflatex %f"
+        },
+        interactive = {
+            repl = nil,
+            title = "",
+            cmd = "",
+            in_shell = false
+        }
+    },
+    kotlin = {
+        shell = {
+            cd = "",
+            cmd = "kotlinc %f"
+        },
+        interactive = {
+            repl = nil,
+            title = "",
+            cmd = "",
+            in_shell = false
+        }
+    },
+    zig = {
+        shell = {
+            cd = "cd %g;",
+            cmd = "zig build run"
+        },
+        interactive = {
+            repl = nil,
+            title = "",
+            cmd = "",
+            in_shell = false
+        }
+    },
+    typescript = {
+        shell = {
+            cd = "",
+            cmd = "npx tsc %f"
+        },
+        interactive = {
+            repl = nil,
+            title = "",
+            cmd = "",
+            in_shell = false
+        }
+    },
+    elixir = {
+        shell = {
+            cd = "cd %g;",
+            cmd = "mix compile"
+        },
+        interactive = {
+            repl = "iex -S mix",
+            title = "beam.smp",
+            cmd = "recompile()",
+            in_shell = false
+        }
+    },
+    ocaml = {
+        shell = {
+            cd = "cd %g;",
+            cmd = "dune build;dune exec $(basename %g)"
+        },
+        interactive = {
+            repl = "dune utop",
+            title = "utop",
+            cmd = "",
+            in_shell = true
+        }
+    },
+    clojure = {
+        shell = {
+            cd = "",
+            cmd = "clj -M %f"
+        },
+        interactive = {
+            repl = "clj",
+            title = "rlwrap",
+            cmd = '(load-file "%f")',
+            in_shell = false
+        }
+    },
+    go = {
+        shell = {
+            cd = "cd %g;",
+            cmd = "go run ."
+        },
+        interactive = {
+            repl = nil,
+            title = "",
+            cmd = "",
+            in_shell = false
+        }
+    },
+    dart = {
+        shell = {
+            cd = "cd %g;",
+            cmd = "dart run"
+        },
+        interactive = {
+            repl = nil,
+            title = "",
+            cmd = "",
+            in_shell = false
+        }
+    },
 
+    split = nil,
+    tmux_split = "tmux split -v",
+    builtin_split = "split",
+    prefer_tmux = true,
+    save = true,
+    focus_shell = true,
+    focus_repl = true,
+    override_shell = true,
+    window = false,
+    telescope = {
+        enabled = false,
+        auto_append = true,
+    }
+}
+```
