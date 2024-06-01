@@ -234,11 +234,6 @@ local function multiplexer_interactive(args)
     end
 end
 
-M.run_vim = function()
-    vim.notify("compal.run_vim is deprecated, remove the keybinding to avoid breaking when it is removed.",
-        vim.log.levels.WARN)
-end
-
 M.run_shell = function(args)
     if conf.prefer_tmux then
         multiplexer_shell(args)

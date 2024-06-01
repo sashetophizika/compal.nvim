@@ -7,8 +7,24 @@ local conf = require("compal.config")
 M.run_smart = runners.run_smart
 M.run_shell = runners.run_shell
 M.run_interactive = runners.run_interactive
-M.run_vim = runners.run_vim
 M.add_to_pickers = utils.add_to_pickers
+
+M.run_vim = function()
+    vim.notify("compal.run_vim is deprecated, remove the keybinding to avoid breaking when it is removed.",
+        vim.log.levels.WARN)
+end
+
+M.picker_shell = function()
+    vim.notify(
+        "compal.picker_shell is deprecated, remove the keybinding to avoid breaking when it is removed.\nSee the documentation for how to load the telescope extension",
+        vim.log.levels.WARN)
+end
+
+M.picker_interactive = function()
+    vim.notify(
+        "compal.picker_interactive is deprecated, remove the keybinding to avoid breaking when it is removed.\nSee the documentation for how to load the telescope extension",
+        vim.log.levels.WARN)
+end
 
 M.setup = function(opts)
     for key, val in pairs(conf) do
@@ -19,22 +35,6 @@ M.setup = function(opts)
     end
 
     if opts then utils.extend_conf(conf, opts) end
-
-    if conf.telescope.enabled then
-        local telescope = require("compal.telecompal")
-        M.picker_shell = telescope.picker_shell
-        M.picker_interactive = telescope.picker_interactive
-
-        vim.api.nvim_create_user_command("CompalPicker", function(opt)
-                M["picker_" .. opt.fargs[1]]()
-            end,
-            {
-                nargs = "*",
-                complete = function()
-                    return { "shell", "interactive" }
-                end,
-            })
-    end
 
     vim.api.nvim_create_user_command("Compal", function(opt)
             if opt.fargs[1] == "set" or opt.fargs[1] == "get" then
