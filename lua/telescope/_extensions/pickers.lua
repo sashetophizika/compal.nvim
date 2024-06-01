@@ -24,7 +24,7 @@ local function attach_mappings(prompt_bufnr, map, mode, ft)
             utils.set_cmd({ "set", ft, mode, "cmd", old_command })
         end
     end)
-    map("i", "<C-Enter>", function()
+    map("i", "<C-s>", function()
         actions.close(prompt_bufnr)
         local selection = action_state.get_selected_entry()
 
