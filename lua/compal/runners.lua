@@ -40,7 +40,7 @@ local function parse_wildcards(str)
 
     if git_root:gmatch("fatal:")() == nil then
         parsed_command = parsed_command:gsub("%%g", git_root)
-    elseif parsed_command:gmatch("%g")() then
+    elseif parsed_command:gmatch("%&g")() then
         error("\nFile is not in a git repository but '%g' was used in the command!!\n")
     end
 
@@ -235,7 +235,7 @@ local function multiplexer_interactive(args)
 end
 
 M.run_shell = function(args)
-    if conf.prefer_tmux then
+    if conf.prefer_tmux and os.getenv("TMUX") then
         multiplexer_shell(args)
     else
         builtin_shell(args)
@@ -243,8 +243,7 @@ M.run_shell = function(args)
 end
 
 M.run_interactive = function(args)
-    print(args)
-    if conf.prefer_tmux then
+    if conf.prefer_tmux and os.getenv("TMUX") then
         multiplexer_interactive(args)
     else
         builtin_interactive(args)
@@ -252,10 +251,6 @@ M.run_interactive = function(args)
 end
 
 M.run_smart = function(args)
-    if not os.getenv("TMUX") then
-        conf.prefer_tmux = false
-    end
-
     if conf[vim.bo.filetype] and conf[vim.bo.filetype].interactive.repl then
         M.run_interactive(args)
     else

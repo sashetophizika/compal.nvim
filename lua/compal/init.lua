@@ -8,6 +8,7 @@ M.run_smart = runners.run_smart
 M.run_shell = runners.run_shell
 M.run_interactive = runners.run_interactive
 M.add_to_pickers = utils.add_to_pickers
+M.conf = conf
 
 M.run_vim = function()
     vim.notify("compal.run_vim is deprecated, remove the keybinding to avoid breaking when it is removed.",
