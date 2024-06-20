@@ -1,7 +1,7 @@
 return {
     c = {
         shell = {
-            cd = "cd %g;",
+            cd = "cd %g",
             cmd = "make",
         },
         interactive = {
@@ -13,7 +13,7 @@ return {
     },
     rust = {
         shell = {
-            cd = "cd %g;",
+            cd = "cd %g",
             cmd = "cargo run",
             extra = { "cargo build --release", "cargo build", "rustc %f" }
         },
@@ -26,7 +26,7 @@ return {
     },
     cpp = {
         shell = {
-            cd = "cd %g;",
+            cd = "cd %g",
             cmd = "make"
         },
         interactive = {
@@ -74,7 +74,7 @@ return {
     },
     cs = {
         shell = {
-            cd = "cd %g;",
+            cd = "cd %g",
             cmd = "dotnet run"
         },
         interactive = {
@@ -182,7 +182,7 @@ return {
     },
     zig = {
         shell = {
-            cd = "cd %g;",
+            cd = "cd %g",
             cmd = "zig build run"
         },
         interactive = {
@@ -206,7 +206,7 @@ return {
     },
     elixir = {
         shell = {
-            cd = "cd %g;",
+            cd = "cd %g",
             cmd = "mix compile"
         },
         interactive = {
@@ -218,7 +218,7 @@ return {
     },
     ocaml = {
         shell = {
-            cd = "cd %g;",
+            cd = "cd %g",
             cmd = "dune build;dune exec $(basename %g)"
         },
         interactive = {
@@ -242,7 +242,7 @@ return {
     },
     go = {
         shell = {
-            cd = "cd %g;",
+            cd = "cd %g",
             cmd = "go run ."
         },
         interactive = {
@@ -254,7 +254,7 @@ return {
     },
     dart = {
         shell = {
-            cd = "cd %g;",
+            cd = "cd %g",
             cmd = "dart run"
         },
         interactive = {

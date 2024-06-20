@@ -33,6 +33,13 @@ local function init(args)
     return ft, mp, args or ""
 end
 
+local warn = false
+local function git_warn()
+    if warn == true then
+        vim.notify("\nFile is not in a git repository but '%g' was used in the command!!\n", vim.log.levels.WARN)
+    end
+end
+
 local function parse_wildcards(str)
     local parsed_command = str:gsub("%%f", vim.fn.expand("%:p")):gsub("%%s", vim.fn.expand("%:p:r")):gsub("%%h",
         vim.fn.expand("%:p:h"))
@@ -40,8 +47,9 @@ local function parse_wildcards(str)
 
     if git_root:gmatch("fatal:")() == nil then
         parsed_command = parsed_command:gsub("%%g", git_root)
-    elseif parsed_command:gmatch("%&g")() then
-        error("\nFile is not in a git repository but '%g' was used in the command!!\n")
+    elseif parsed_command:gmatch("%%g")() then
+        warn = true
+        return ""
     end
 
     return parsed_command
@@ -62,6 +70,16 @@ local function auto_append(cmd, ft, mode)
     end
 end
 
+local function full_cmd(cd, cmd)
+    if cd:gmatch(";")() then
+        return cd .. " " .. cmd
+    elseif cd == "" or cd == " " then
+        return cmd
+    else
+        return cd .. "; " .. cmd
+    end
+end
+
 local terminal = false
 local term_win = 0
 local repl_info = nil
@@ -69,7 +87,8 @@ local function builtin_shell(args)
     local ft
     ft, _, args = init(args)
 
-    local cmd = parse_wildcards(conf[ft].shell.cd .. conf[ft].shell.cmd) .. args .. "<Enter>"
+    local cd    = parse_wildcards(conf[ft].shell.cd)
+    local cmd   = parse_wildcards(conf[ft].shell.cmd) .. args .. "<Enter>"
 
     if terminal then
         vim.api.nvim_set_current_win(term_win)
@@ -88,8 +107,10 @@ local function builtin_shell(args)
         cmd = cmd .. "<C-\\><C-n><C-w><C-w>"
     end
 
-    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("i" .. cmd, true, false, true), "n", true)
+
+    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("i" .. full_cmd(cd, cmd), true, false, true), "n", true)
     auto_append(conf[ft].shell.cmd .. args, ft, "shell")
+    git_warn()
 end
 
 local function builtin_interactive(args)
@@ -180,13 +201,17 @@ local function multiplexer_shell(args)
             multiplexer_select(mp, pane_index)
         end
 
+        local cd  = parse_wildcards(conf[ft].shell.cd)
+        local cmd = parse_wildcards(conf[ft].shell.cmd)
+
         vim.fn.system(string.format(multiplexer_commands.send_keys[mp],
-            parse_wildcards(conf[ft].shell.cd .. conf[ft].shell.cmd) .. args))
+            full_cmd(cd, cmd) .. args))
 
         if conf.focus_shell == false then
             vim.fn.system(multiplexer_commands.pane_select[mp] .. tonumber(pane_index) - 1)
         end
         auto_append(conf[ft].shell.cmd .. args, ft, "shell")
+        git_warn()
     else
         error("\nNo active multiplexer session!!\n")
     end

@@ -59,7 +59,7 @@ filetype = {
 
 ```
 
-The `cmd` and `cd` options allow the use of some wildcards. When using `cd` make sure to end the command with `;` or `&&` or it would not work. The `interactive.title` field is there because certain repls have a title different from the command like `ghci` where the title is `ghc` and `ipython` where the title is `python`.
+The `cmd` and `cd` options allow the use of some wildcards. The `interactive.title` field is there because certain repls have a title different from the command like `ghci` where the title is `ghc` and `ipython` where the title is `python`.
 
 | Wildcard | Description
 |----------|------------|
@@ -79,7 +79,6 @@ The `cmd` and `cd` options allow the use of some wildcards. When using `cd` make
 | `override_shell`       | `true`            | Whether to execute repl command in an available shell pane for `run_interactive`
 | `window`               | `false`           | Whether to use tmux windows and neovim tabs instead of panes
 | `prefer_tmux`          | `true`            | Whether to use the neovim terminal even inside tmux
-| `telescope`            | `false`           | Enables telescope integration
 
 ### Example configuration
 ```lua
