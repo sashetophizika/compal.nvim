@@ -83,12 +83,11 @@ end
 local terminal = false
 local term_win = 0
 local repl_info = nil
-local function builtin_shell(args)
-    local ft
-    ft, _, args = init(args)
 
-    local cd    = parse_wildcards(conf[ft].shell.cd)
-    local cmd   = parse_wildcards(conf[ft].shell.cmd) .. args .. "<Enter>"
+local function open_builtin(ft, interactive)
+    if interactive and not conf.override_shell then
+        repl_info = conf[ft].interactive.title
+    end
 
     if terminal then
         vim.api.nvim_set_current_win(term_win)
@@ -98,15 +97,28 @@ local function builtin_shell(args)
         else
             vim.cmd("split")
         end
-        vim.cmd("terminal")
+
+        if interactive then
+            vim.cmd("terminal " .. conf[ft].interactive.repl)
+        else
+            vim.cmd("terminal")
+        end
 
         term_win = vim.api.nvim_get_current_win()
     end
+end
+
+local function builtin_shell(args)
+    local ft
+    ft, _, args = init(args)
+
+    local cd    = parse_wildcards(conf[ft].shell.cd)
+    local cmd   = parse_wildcards(conf[ft].shell.cmd) .. args .. "<Enter>"
+    open_builtin(ft, false)
 
     if not conf.focus_shell then
         cmd = cmd .. "<C-\\><C-n><C-w><C-w>"
     end
-
 
     vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("i" .. full_cmd(cd, cmd), true, false, true), "n", true)
     auto_append(conf[ft].shell.cmd .. args, ft, "shell")
@@ -118,23 +130,10 @@ local function builtin_interactive(args)
     ft, _, args = init(args)
 
     local cmd = parse_wildcards(conf[ft].interactive.cmd) .. args .. "<Enter>"
+    open_builtin(ft, true)
 
-    if terminal then
-        vim.api.nvim_set_current_win(term_win)
-        if conf.override_shell and repl_info ~= conf[ft].interactive.title then
-            repl_info = conf[ft].interactive.title
-            cmd = conf[ft].interactive.repl .. "<Enter>" .. cmd
-        end
-    else
-        if conf.window then
-            vim.cmd("tabnew")
-        else
-            vim.cmd("split")
-        end
-        vim.cmd("terminal " .. conf[ft].interactive.repl)
-        repl_info = conf[ft].interactive.title
-
-        term_win = vim.api.nvim_get_current_win()
+    if terminal and conf.override_shell and repl_info ~= conf[ft].interactive.title then
+        cmd = conf[ft].interactive.repl .. "<Enter>" .. cmd
     end
 
     if not conf.focus_repl then
@@ -184,25 +183,42 @@ local function multiplexer_new_pane(ft, mp, interactive)
     end
 end
 
+local function open_multiplexer(ft, mp, pane_cmd, interactive)
+    local pane_index
+
+    if pane_cmd ~= "" then
+        pane_index = pane_cmd:gmatch("%w+")()
+        multiplexer_select(mp, pane_index)
+        return pane_index
+    end
+
+    if interactive and conf.override_shell then
+        pane_cmd = multiplexer_list_grep(mp, "sh")
+
+        if pane_cmd ~= "" then
+            pane_index = pane_cmd:gmatch("%w+")()
+            multiplexer_select(mp, pane_index)
+            vim.fn.system(string.format(multiplexer_commands.send_keys[mp], conf[ft].interactive.repl))
+            return pane_index
+        end
+    end
+
+    pane_index = tonumber(vim.fn.system(multiplexer_commands.pane_index[mp])) + 1
+    multiplexer_new_pane(ft, mp, interactive)
+    return pane_index
+end
+
 local function multiplexer_shell(args)
     local ft
     local mp
     ft, mp, args = init(args)
 
     if mp then
-        local sh_pane = multiplexer_list_grep(mp, "sh")
-        local pane_index
+        local sh_pane    = multiplexer_list_grep(mp, "sh")
+        local pane_index = open_multiplexer(ft, mp, sh_pane, false)
 
-        if sh_pane == "" then
-            pane_index = tonumber(vim.fn.system(multiplexer_commands.pane_index[mp])) + 1
-            multiplexer_new_pane(ft, mp, false)
-        else
-            pane_index = sh_pane:gmatch("%w+")()
-            multiplexer_select(mp, pane_index)
-        end
-
-        local cd  = parse_wildcards(conf[ft].shell.cd)
-        local cmd = parse_wildcards(conf[ft].shell.cmd)
+        local cd         = parse_wildcards(conf[ft].shell.cd)
+        local cmd        = parse_wildcards(conf[ft].shell.cmd)
 
         vim.fn.system(string.format(multiplexer_commands.send_keys[mp],
             full_cmd(cd, cmd) .. args))
@@ -224,31 +240,11 @@ local function multiplexer_interactive(args)
 
     if mp then
         local repl_pane = multiplexer_list_grep(mp, conf[ft].interactive.title)
-        local pane_index
-
-        if repl_pane ~= "" then
-            pane_index = repl_pane:gmatch("%w+")()
-            multiplexer_select(mp, pane_index)
-        else
-            if conf.override_shell then
-                local sh_pane = multiplexer_list_grep(mp, "sh")
-
-                if sh_pane ~= "" then
-                    pane_index = sh_pane:gmatch("%w+")()
-                    multiplexer_select(mp, pane_index)
-                    vim.fn.system(string.format(multiplexer_commands.send_keys[mp], conf[ft].interactive.repl))
-                else
-                    pane_index = tonumber(vim.fn.system(multiplexer_commands.pane_index[mp])) + 1
-                    multiplexer_new_pane(ft, mp, true)
-                end
-            else
-                pane_index = tonumber(vim.fn.system(multiplexer_commands.pane_index[mp])) + 1
-                multiplexer_new_pane(ft, mp, true)
-            end
-        end
+        local pane_index = open_multiplexer(ft, mp, repl_pane, true)
 
         vim.fn.system(string.format(multiplexer_commands.send_keys[mp],
             parse_wildcards(conf[ft].interactive.cmd) .. args))
+
         if conf.focus_repl == false then
             vim.fn.system(multiplexer_commands.pane_select[mp] .. tonumber(pane_index) - 1)
         end
@@ -256,6 +252,28 @@ local function multiplexer_interactive(args)
         auto_append(conf[ft].interactive.cmd .. args, ft, "interactive")
     else
         error("\nNo active multiplexer session!!\n")
+    end
+end
+
+M.open_shell = function()
+    local ft = vim.bo.filetype
+    if conf.prefer_tmux and os.getenv("TMUX") then
+        local mp      = "tmux"
+        local sh_pane = multiplexer_list_grep(mp, "sh")
+        open_multiplexer(ft, mp, sh_pane, false)
+    else
+        open_builtin(ft, false)
+    end
+end
+
+M.open_repl = function()
+    local ft = vim.bo.filetype
+    if conf.prefer_tmux and os.getenv("TMUX") then
+        local mp        = "tmux"
+        local repl_pane = multiplexer_list_grep(mp, conf[ft].interactive.title)
+        open_multiplexer(ft, mp, repl_pane, true)
+    else
+        open_builtin(ft, true)
     end
 end
 

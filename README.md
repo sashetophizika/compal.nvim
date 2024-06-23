@@ -1,40 +1,43 @@
 # compal.nvim
-Set a keybinding to compile and run code in any language inside the neovim terminal or a seperate tmux pane.
+Set a keybinding to compile and run code in any programming language inside the neovim terminal or a seperate tmux pane.
 
 ## Installation
 Using [Lazy](https://github.com/folke/lazy.nvim)
 ```lua
-{ 'sasheto-phizika/compal.nvim' }
+{ 'sashetophizika/compal.nvim' }
 ```
 Using [packer](https://github.com/wbthomason/packer.nvim)
 ```lua
-use 'sasheto-phizika/compal.nvim'
+use 'sashetophizika/compal.nvim'
 
 ```
-Using [Plug](https://github.com/junegunn/vim-plug)
-```lua
-Plug('sasheto-phizika/compal.nvim')
-```
+## Usage
+The plugin provides several functions that execute commands based on the filetype defined by `vim.bo.filetype`. Modifications to filetype detection can be made with [`vim.filetype.add`](https://neovim.io/doc/user/lua.html#lua-filetype).
 
-## Basic Usage
-The plugin provides 3 functions that execute commands based on the filetype defined by `vim.bo.filetype`. Modifications to filetype detection can be made with [`vim.filetype.add`](https://neovim.io/doc/user/lua.html#lua-filetype).
+### Functions:
+* `run_shell`: Runs the command in the first shell pane in the window or if there are none, spawns a shell pane and runs there. 
+* `run_interactive`: For languages that provide a repl, works like `run_shell` but it uses the corresponding repl instead of the shell. Also overrides existing shell panes by default.
+* `run_smart`: Defaults to `run_interactive`, with `run_shell` if filetype doesn't have a repl and the builtin terminal if neovim isn't running inside tmux.
+* `open_shell`: Opens a shell pane or focuses an existing one without running any commands
+* `open_repl`: Opens a repl pane for the corresponding filetype or focuses an existing one without running any commands
 
-`run_shell`: Runs the command in the first shell pane in the window or if there are none, spawns a shell pane and runs there. 
-`run_interactive`: For languages that provide a repl, works like `run_shell` but it uses the corresponding repl instead of the shell. Also overrides existing shell panes by default.
-`run_smart`: Defaults to `run_interactive`, with `run_shell` if filetype doesn't have a repl and the builtin terminal if neovim isn't running inside tmux.
 
+### Setup
 Set keybindings inside `init.lua`
-
 ```lua
 local compal = require("compal").setup()
-vim.keymap.set("n", "<leader>ee", compal.run_smart)
-vim.keymap.set("n", "<leader>er", compal.run_interactive)
-vim.keymap.set("n", "<leader>ew", compal.run_shell)
+vim.keymap.set("n", "<leader>rr", compal.run_smart)
+vim.keymap.set("n", "<leader>rs", compal.run_shell)
+vim.keymap.set("n", "<leader>ri", compal.run_interactive)
+vim.keymap.set("n", "<leader>os", compal.open_shell)
+vim.keymap.set("n", "<leader>or", compal.open_repl)
 ```
+
+### Command
 For programs that take arguments, there is the `Compal [smart | interactive | shell | set | get] *args` command. For convenience, you can create a keybinding that enters command mode and autofills part of the command.
 
 ```lua
-vim.keymap.set("n", "<leader>ed", ":Compal smart ")
+vim.keymap.set("n", "<leader>ra", ":Compal smart ")
 ```
 
 The `set` and `get` options let you check and change the configuration for the current session. For example, `:Compal set shell cmd cmake .` or `:Compal set shell cd` to remove the default cd command, where the filetype is inferred from `vim.bo.filetype`, but can also be given as the first argument.

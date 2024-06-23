@@ -7,6 +7,8 @@ local conf = require("compal.config")
 M.run_smart = runners.run_smart
 M.run_shell = runners.run_shell
 M.run_interactive = runners.run_interactive
+M.open_shell = runners.open_shell
+M.open_repl = runners.open_repl
 M.add_to_pickers = utils.add_to_pickers
 M.conf = conf
 
