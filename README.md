@@ -132,8 +132,8 @@ local compal = require("compal").setup({
     }
 })
 
-vim.keymap.set('n', '<leader>fe', compal_telescope.shell)
-vim.keymap.set('n', '<leader>fr', compal_telescope.interactive)
+vim.keymap.set('n', '<leader>ts', compal_telescope.shell)
+vim.keymap.set('n', '<leader>ti', compal_telescope.interactive)
 
 ```
 
