@@ -1,6 +1,8 @@
 # compal.nvim
 Set a keybinding to compile and run code in any programming language inside the neovim terminal or a seperate tmux pane.
 
+![image](showcase.gif "showcase")
+
 ## Installation
 Using [Lazy](https://github.com/folke/lazy.nvim)
 ```lua
