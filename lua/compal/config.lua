@@ -219,12 +219,12 @@ return {
     ocaml = {
         shell = {
             cd = "cd %g",
-            cmd = "dune build;dune exec $(basename %g)"
+            cmd = "dune exec $(basename %g)"
         },
         interactive = {
             repl = "dune utop",
-            title = "utop",
-            cmd = "",
+            title = "ocamlrun",
+            cmd = "#use_output \"dune ocaml top\";;",
             in_shell = true
         }
     },
