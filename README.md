@@ -74,16 +74,16 @@ The `cmd` and `cd` options allow the use of some wildcards. The `interactive.tit
 | `%g`     | full path to git root directory if it exists
 
 ### Global Options
-| Option | Default | Description
-|--------|---------|------------|
-| `tmux_split`           | `"tmux split -v"` | Command for creating the new tmux pane
-| `builtin_split`        | `"split"`         | Command for creating the new nevim split window
-| `save`                 | `true`            | Whether to write changes to the file before execution
-| `focus_shell`          | `true`            | Whether to focus the shell after execution of `run_shell`  
-| `focus_repl`           | `true`            | Whether to focus the shell after execution of `run_interactive`  
-| `override_shell`       | `true`            | Whether to execute repl command in an available shell pane for `run_interactive`
-| `window`               | `false`           | Whether to use tmux windows and neovim tabs instead of panes
-| `prefer_tmux`          | `true`            | Whether to use the neovim terminal even inside tmux
+| Option           | Default           | Description
+|------------------|-------------------|-------------|
+| `tmux_split`     | `"tmux split -v"` | Command for creating the new tmux pane
+| `builtin_split`  | `"split"`         | Command for creating the new neovim split window
+| `save`           | `true`            | Whether to write changes to the file before execution
+| `focus_shell`    | `true`            | Whether to focus the shell after execution of `run_shell`  
+| `focus_repl`     | `true`            | Whether to focus the shell after execution of `run_interactive`  
+| `override_shell` | `true`            | Whether to execute repl command in an available shell pane for `run_interactive`
+| `window`         | `false`           | Whether to use tmux windows and neovim tabs instead of panes
+| `prefer_tmux`    | `true`            | Whether to use the neovim terminal even inside tmux
 
 ### Example configuration
 ```lua

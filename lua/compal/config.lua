@@ -224,7 +224,7 @@ return {
         interactive = {
             repl = "dune utop",
             title = "ocamlrun",
-            cmd = "#use_output \"dune ocaml top\";;",
+            cmd = "#use_output \"dune ocaml top\";; ",
             in_shell = true
         }
     },

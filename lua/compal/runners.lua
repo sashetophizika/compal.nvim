@@ -198,7 +198,7 @@ local function open_multiplexer(ft, mp, pane_cmd, interactive)
         if pane_cmd ~= "" then
             pane_index = pane_cmd:gmatch("%w+")()
             multiplexer_select(mp, pane_index)
-            vim.fn.system(string.format(multiplexer_commands.send_keys[mp], conf[ft].interactive.repl))
+            vim.fn.system(string.format(multiplexer_commands.send_keys[mp], parse_wildcards(conf[ft].interactive.repl)))
             return pane_index
         end
     end
