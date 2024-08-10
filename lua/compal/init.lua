@@ -12,23 +12,6 @@ M.open_repl = runners.open_repl
 M.add_to_pickers = utils.add_to_pickers
 M.conf = conf
 
-M.run_vim = function()
-    vim.notify("compal.run_vim is deprecated, remove the keybinding to avoid breaking when it is removed.",
-        vim.log.levels.WARN)
-end
-
-M.picker_shell = function()
-    vim.notify(
-        "compal.picker_shell is deprecated, remove the keybinding to avoid breaking when it is removed.\nSee the documentation for how to load the telescope extension",
-        vim.log.levels.WARN)
-end
-
-M.picker_interactive = function()
-    vim.notify(
-        "compal.picker_interactive is deprecated, remove the keybinding to avoid breaking when it is removed.\nSee the documentation for how to load the telescope extension",
-        vim.log.levels.WARN)
-end
-
 M.setup = function(opts)
     for key, val in pairs(conf) do
         if type(val) == "table" and key ~= "telescope" then
