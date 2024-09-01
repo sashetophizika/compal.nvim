@@ -59,6 +59,9 @@ end
 M.picker_interactive = function()
     local opts = themes.get_dropdown {}
     local ft = vim.bo.filetype
+    if conf[ft] == nil then
+        error("\nFiletype not supported!! It can be added in init.lua.\n")
+    end
 
     pickers.new(opts, {
         prompt_title = "Compal Interactive",

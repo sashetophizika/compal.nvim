@@ -19,12 +19,12 @@ local function init(args)
     if os.getenv("TMUX") then
         mp = "tmux"
     elseif os.getenv("ZELLIJ") then
-        error("\nZellij not yet supported.\n")
+        error("\nZellij not yet supported.\n", vim.log.levels.ERROR)
         mp = "zellij"
     end
 
     if conf[ft] == nil then
-        error("\nFiletype not supported!! It can be added in init.lua.\n")
+        error("\nFiletype not supported!! It can be added in init.lua.\n", vim.log.levels.ERROR)
     end
 
     if conf.save then
@@ -71,7 +71,7 @@ local function auto_append(cmd, ft, mode)
 end
 
 local function full_cmd(cd, cmd)
-    if cd:gmatch(";")() then
+    if cd:gmatch(";")() or cd:gmatch("&&") then
         return cd .. " " .. cmd
     elseif cd == "" or cd == " " then
         return cmd
@@ -108,32 +108,26 @@ local function open_builtin(ft, interactive)
     end
 end
 
-local function builtin_shell(args)
-    local ft
-    ft, _, args = init(args)
-
-    local cd    = parse_wildcards(conf[ft].shell.cd)
-    local cmd   = parse_wildcards(conf[ft].shell.cmd) .. args .. "<Enter>"
-    open_builtin(ft, false)
+local function builtin_shell(filetype, args)
+    local cd  = parse_wildcards(conf[filetype].shell.cd)
+    local cmd = parse_wildcards(conf[filetype].shell.cmd) .. args .. "<Enter>"
+    open_builtin(filetype, false)
 
     if not conf.focus_shell then
         cmd = cmd .. "<C-\\><C-n><C-w><C-w>"
     end
 
     vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("i" .. full_cmd(cd, cmd), true, false, true), "n", true)
-    auto_append(conf[ft].shell.cmd .. args, ft, "shell")
+    auto_append(conf[filetype].shell.cmd .. args, filetype, "shell")
     git_warn()
 end
 
-local function builtin_interactive(args)
-    local ft
-    ft, _, args = init(args)
+local function builtin_interactive(filetype, args)
+    local cmd = parse_wildcards(conf[filetype].interactive.cmd) .. args .. "<Enter>"
+    open_builtin(filetype, true)
 
-    local cmd = parse_wildcards(conf[ft].interactive.cmd) .. args .. "<Enter>"
-    open_builtin(ft, true)
-
-    if terminal and conf.override_shell and repl_info ~= conf[ft].interactive.title then
-        cmd = conf[ft].interactive.repl .. "<Enter>" .. cmd
+    if terminal and conf.override_shell and repl_info ~= conf[filetype].interactive.title then
+        cmd = conf[filetype].interactive.repl .. "<Enter>" .. cmd
     end
 
     if not conf.focus_repl then
@@ -141,7 +135,7 @@ local function builtin_interactive(args)
     end
 
     vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("i" .. cmd, true, false, true), "n", true)
-    auto_append(conf[ft].shell.cmd .. args, ft, "shell")
+    auto_append(conf[filetype].shell.cmd .. args, filetype, "shell")
 end
 
 local function multiplexer_list_grep(mp, shell)
@@ -208,50 +202,39 @@ local function open_multiplexer(ft, mp, pane_cmd, interactive)
     return pane_index
 end
 
-local function multiplexer_shell(args)
-    local ft
-    local mp
-    ft, mp, args = init(args)
+local function multiplexer_shell(filetype, multiplexer, args)
+    local sh_pane    = multiplexer_list_grep(multiplexer, "sh")
+    local pane_index = open_multiplexer(filetype, multiplexer, sh_pane, false)
 
-    if mp then
-        local sh_pane    = multiplexer_list_grep(mp, "sh")
-        local pane_index = open_multiplexer(ft, mp, sh_pane, false)
+    local cd         = parse_wildcards(conf[filetype].shell.cd)
+    local cmd        = parse_wildcards(conf[filetype].shell.cmd)
 
-        local cd         = parse_wildcards(conf[ft].shell.cd)
-        local cmd        = parse_wildcards(conf[ft].shell.cmd)
+    vim.fn.system(string.format(multiplexer_commands.send_keys[multiplexer],
+        full_cmd(cd, cmd) .. args))
 
-        vim.fn.system(string.format(multiplexer_commands.send_keys[mp],
-            full_cmd(cd, cmd) .. args))
-
-        if conf.focus_shell == false then
-            vim.fn.system(multiplexer_commands.pane_select[mp] .. tonumber(pane_index) - 1)
-        end
-        auto_append(conf[ft].shell.cmd .. args, ft, "shell")
-        git_warn()
-    else
-        error("\nNo active multiplexer session!!\n")
+    if conf.focus_shell == false then
+        vim.fn.system(multiplexer_commands.pane_select[multiplexer] .. tonumber(pane_index) - 1)
     end
+    auto_append(conf[filetype].shell.cmd .. args, filetype, "shell")
+    git_warn()
 end
 
-local function multiplexer_interactive(args)
-    local ft
-    local mp
-    ft, mp, args = init(args)
+local function multiplexer_interactive(filetype, multiplexer, args)
+    local repl_pane = multiplexer_list_grep(multiplexer, conf[filetype].interactive.title)
+    local pane_index = open_multiplexer(filetype, multiplexer, repl_pane, true)
 
-    if mp then
-        local repl_pane = multiplexer_list_grep(mp, conf[ft].interactive.title)
-        local pane_index = open_multiplexer(ft, mp, repl_pane, true)
+    vim.fn.system(string.format(multiplexer_commands.send_keys[multiplexer],
+        parse_wildcards(conf[filetype].interactive.cmd) .. args))
 
-        vim.fn.system(string.format(multiplexer_commands.send_keys[mp],
-            parse_wildcards(conf[ft].interactive.cmd) .. args))
+    if conf.focus_repl == false then
+        vim.fn.system(multiplexer_commands.pane_select[multiplexer] .. tonumber(pane_index) - 1)
+    end
 
-        if conf.focus_repl == false then
-            vim.fn.system(multiplexer_commands.pane_select[mp] .. tonumber(pane_index) - 1)
-        end
+    auto_append(conf[filetype].interactive.cmd .. args, filetype, "interactive")
 
-        auto_append(conf[ft].interactive.cmd .. args, ft, "interactive")
-    else
-        error("\nNo active multiplexer session!!\n")
+    if conf[filetype].interactive.cmd == nil then
+        vim.notify("Filetype '" .. filetype .. "' has no interactive command!!\nAdd it in init.lua.", vim.log.levels
+            .WARN)
     end
 end
 
@@ -278,18 +261,37 @@ M.open_repl = function()
 end
 
 M.run_shell = function(args)
-    if conf.prefer_tmux and os.getenv("TMUX") then
-        multiplexer_shell(args)
+    local filetype
+    local multiplexer
+    filetype, multiplexer, args = init(args)
+
+    if conf[filetype].shell.cmd == nil then
+        vim.notify("Filetype '" .. filetype .. "' has no shell command!!\nAdd it in init.lua.", vim.log.levels.ERROR)
+        return
+    end
+
+    if conf.prefer_tmux and multiplexer then
+        multiplexer_shell(filetype, multiplexer, args)
     else
-        builtin_shell(args)
+        builtin_shell(filetype, args)
     end
 end
 
 M.run_interactive = function(args)
-    if conf.prefer_tmux and os.getenv("TMUX") then
-        multiplexer_interactive(args)
+    local filetype
+    local multiplexer
+    filetype, multiplexer, args = init(args)
+
+    if conf[filetype].interactive.repl == nil then
+        vim.notify("Filetype '" .. filetype .. "' has no repl!!\nIf it should, add it in init.lua.", vim.log.levels
+            .ERROR)
+        return
+    end
+
+    if conf.prefer_tmux and multiplexer then
+        multiplexer_interactive(filetype, multiplexer, args)
     else
-        builtin_interactive(args)
+        builtin_interactive(filetype, args)
     end
 end
 
