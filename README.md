@@ -18,10 +18,10 @@ The plugin provides several functions that execute commands based on the filetyp
 
 ### Functions
 * `run_shell`: Runs the command in the first shell pane in the window or if there are none, spawns a shell pane and runs there. 
-* `run_interactive`: For languages that provide a repl, works like `run_shell` but it uses the corresponding repl instead of the shell. Also overrides existing shell panes by default.
-* `run_smart`: Defaults to `run_interactive`, with `run_shell` if filetype doesn't have a repl and the builtin terminal if neovim isn't running inside tmux.
-* `open_shell`: Opens a shell pane or focuses an existing one without running any commands
-* `open_repl`: Opens a repl pane for the corresponding filetype or focuses an existing one without running any commands
+* `run_interactive`: For languages that provide a repl, works like `run_shell` but it uses the corresponding repl instead of the shell. Overrides existing shell panes by default.
+* `run_smart`: Defaults to `run_interactive`, with `run_shell` if filetype doesn't have a repl.
+* `open_shell`: Opens a shell pane or focuses an existing one without running any commands.
+* `open_repl`: Opens a repl pane for the current filetype or focuses an existing one without running any commands.
 
 
 ### Setup
@@ -63,8 +63,9 @@ filetype = {
 }
 
 ```
+The `interactive.title` field is for certain repls have a title different from the command like `ghci` where the title is `ghc` and `ipython` where the title is `python`.
 
-The `cmd` and `cd` options allow the use of some wildcards. The `interactive.title` field is there because certain repls have a title different from the command like `ghci` where the title is `ghc` and `ipython` where the title is `python`.
+The `cmd` and `cd` options allow the use of the following wildcards:
 
 | Wildcard | Description
 |----------|------------|
@@ -78,19 +79,19 @@ The `cmd` and `cd` options allow the use of some wildcards. The `interactive.tit
 |------------------|-------------------|-------------|
 | `tmux_split`     | `"tmux split -v"` | Command for creating the new tmux pane
 | `builtin_split`  | `"split"`         | Command for creating the new neovim split window
-| `save`           | `true`            | Whether to write changes to the file before execution
-| `focus_shell`    | `true`            | Whether to focus the shell after execution of `run_shell`  
-| `focus_repl`     | `true`            | Whether to focus the shell after execution of `run_interactive`  
-| `override_shell` | `true`            | Whether to execute repl command in an available shell pane for `run_interactive`
-| `window`         | `false`           | Whether to use tmux windows and neovim tabs instead of panes
-| `prefer_tmux`    | `true`            | Whether to use the neovim terminal even inside tmux
+| `save`           | `true`            | Write changes to the file before execution
+| `focus_shell`    | `true`            | Focus the shell after execution of `run_shell`  
+| `focus_repl`     | `true`            | Focus the repl after execution of `run_interactive`  
+| `override_shell` | `true`            | Execute repl command in an available shell pane for `run_interactive`
+| `window`         | `false`           | Use tmux windows and neovim tabs instead of panes
+| `prefer_tmux`    | `true`            | Use the neovim terminal even inside tmux if false
 
 ### Example configuration
 ```lua
 local compal = require("compal").setup({
     rust = {
         shell = {
-            cd = "cd %g;",
+            cd = "cd %g",
             cmd = "cargo run --release",
         },
     },
@@ -110,14 +111,14 @@ local compal = require("compal").setup({
 If you have [telescope](https://github.com/nvim-telescope/telescope.nvim) installed, you can use it to spawn a dropdown menu with extra commands to choose from. First register the telescope extension:
 
 ```lua
-require("telescope").load_extension('compal')
+require('telescope').load_extension('compal')
 local compal_telescope = require('telescope').extensions.compal
 ```
 
 Then enable telescope in your setup and create tables for extra commands: 
 
 ```lua
-local compal = require("compal").setup({
+local compal = require('compal').setup({
     rust = {
         shell = {
             extra = {"cargo run --release", "cargo build --release", "rustc %f;%s"},
@@ -139,7 +140,7 @@ vim.keymap.set('n', '<leader>ti', compal_telescope.interactive)
 
 ```
 
-You can also `Compal add [shell|interactive] cmd` to add a new command to the list for the current session (e.g.`Compal add shell cargo run --release`). Using the `Compal` command to add arguments appends the new command to the list, unless `telescope.auto_append = false`. To set the selected command as default for the session, use `<C-s>` when selecting.
+You can use `Compal add [shell|interactive] cmd` to add a new command to the list for the current session (e.g.`Compal add shell cargo run --release`). Using the `Compal` command to add arguments appends the new command to the list, unless `telescope.auto_append = false`. To set the selected command as default for the session, use `<C-s>` when selecting.
 
 ##  Default Language table
 The default configuration for each programming laguage can be found in [config.lua](https://github.com/sashetophizika/compal.nvim/blob/master/lua/compal/config.lua).
