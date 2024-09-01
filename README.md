@@ -67,12 +67,10 @@ The `interactive.title` field is for certain repls have a title different from t
 
 The `cmd` and `cd` options allow the use of the following wildcards:
 
-| Wildcard | Description
-|----------|------------|
-| `%f`     | filename with full path
-| `%s`     | filename with full path and truncated extension
-| `%h`     | full path to parent directory of current buffer
-| `%g`     | full path to git root directory if it exists
+* `%f`: filename with full path.
+* `%s`: filename with full path and truncated extension.
+* `%h`: full path to parent directory of current file.
+* `%g`: full path to git root directory if it exists.
 
 ### Global Options
 | Option           | Default           | Description
