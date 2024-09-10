@@ -71,9 +71,9 @@ local function auto_append(cmd, ft, mode)
 end
 
 local function full_cmd(cd, cmd)
-    if cd:gmatch(";")() or cd:gmatch("&&") then
+    if cd:gmatch(";")() or cd:gmatch("&&")() then
         return cd .. " " .. cmd
-    elseif cd == "" or cd == " " then
+    elseif cd == "" or cd == " " or cd == nil then
         return cmd
     else
         return cd .. "; " .. cmd
