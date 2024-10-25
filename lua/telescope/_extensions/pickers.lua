@@ -4,7 +4,6 @@ local runners = require("compal.runners")
 local conf = require("compal.config")
 local utils = require("compal.utils")
 
-
 local pickers = require "telescope.pickers"
 local finders = require "telescope.finders"
 local actions = require "telescope.actions"
@@ -12,26 +11,31 @@ local themes = require "telescope.themes"
 local action_state = require "telescope.actions.state"
 local tconf = require("telescope.config").values
 
+local function run_cmd(mode, ft, temp)
+    local old_cmd = conf[ft][mode].cmd
+    local selection = action_state.get_selected_entry()
+
+    local cmd = action_state.get_current_line()
+    if selection and selection[1] then
+        cmd = selection[1]
+    end
+
+    utils.set_cmd({ "set", mode, "cmd", cmd })
+    runners["run_" .. mode]()
+
+    if temp then
+        utils.set_cmd({ "set", ft, mode, "cmd", old_cmd })
+    end
+end
+
 local function attach_mappings(prompt_bufnr, map, mode, ft)
     actions.select_default:replace(function()
         actions.close(prompt_bufnr)
-        local selection = action_state.get_selected_entry()
-
-        if selection[1] ~= nil then
-            local old_command = conf[ft][mode].cmd
-            utils.set_cmd({ "set", mode, "cmd", selection[1] })
-            runners["run_" .. mode]()
-            utils.set_cmd({ "set", ft, mode, "cmd", old_command })
-        end
+        run_cmd(mode, ft, true)
     end)
     map("i", "<C-s>", function()
         actions.close(prompt_bufnr)
-        local selection = action_state.get_selected_entry()
-
-        if selection[1] ~= nil then
-            utils.set_cmd({ "set", mode, "cmd", selection[1] })
-            runners["run_" .. mode]()
-        end
+        run_cmd(mode, ft, false)
     end)
     return true
 end
