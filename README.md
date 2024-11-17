@@ -58,30 +58,30 @@ filetype = {
         interactive = {
             repl = command_to_launch_repl,
             cmd = command_to_load_file,
-            title = tmux_pane_current_command,
+            title = tmux_pane_repl_title,
         },
 }
 
 ```
-The `interactive.title` field is for certain repls have a title different from the command like `ghci` where the title is `ghc` and `ipython` where the title is `python`.
+The `interactive.title` field is for certain repls that have a title different from the command like `ghci` where the title is `ghc` and `ipython` where the title is `python`.
 
 The `cmd` and `cd` options allow the use of the following wildcards:
 
 * `%f`: filename with full path.
-* `%s`: filename with full path and truncated extension.
-* `%h`: full path to parent directory of current file.
-* `%g`: full path to git root directory if it exists.
+* `%s`: filename with path without extension.
+* `%h`: path to parent directory of current file.
+* `%g`: path to git root directory if it exists.
 
 ### Global Options
 | Option           | Default           | Description
 |------------------|-------------------|-------------|
-| `tmux_split`     | `"tmux split -v"` | Command for creating the new tmux pane
-| `builtin_split`  | `"split"`         | Command for creating the new neovim split window
-| `save`           | `true`            | Write changes to the file before execution
-| `focus_shell`    | `true`            | Focus the shell after execution of `run_shell`  
-| `focus_repl`     | `true`            | Focus the repl after execution of `run_interactive`  
-| `override_shell` | `true`            | Execute repl command in an available shell pane for `run_interactive`
-| `window`         | `false`           | Use tmux windows and neovim tabs instead of panes
+| `tmux_split`     | `"tmux split -v"` | Command for creating the tmux pane
+| `builtin_split`  | `"split"`         | Command for creating the neovim split window
+| `save`           | `true`            | Write changes before running
+| `focus_shell`    | `true`            | Focus the shell after `run_shell`  
+| `focus_repl`     | `true`            | Focus the repl after `run_interactive`  
+| `override_shell` | `true`            | Execute repl commands in an available shell pane
+| `window`         | `false`           | Use tmux windows and neovim tabs instead of splits
 | `prefer_tmux`    | `true`            | Use the neovim terminal even inside tmux if false
 
 ### Example configuration
