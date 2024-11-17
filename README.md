@@ -119,7 +119,7 @@ Then enable telescope in your setup and create tables for extra commands:
 local compal = require('compal').setup({
     rust = {
         shell = {
-            extra = {"cargo run --release", "cargo build --release", "rustc %f;%s"},
+            extra = {"cargo clippy", "cargo test", "rustc %f;%s"},
         },
     },
     python = {
