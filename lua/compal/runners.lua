@@ -12,7 +12,7 @@ local multiplexer_commands = {
     pane_index = { tmux = "tmux display-message -p '#{pane_index}'" },
 }
 
-local function init(args)
+local function init()
     local ft = vim.bo.filetype
 
     local mp
@@ -23,14 +23,14 @@ local function init(args)
         mp = "zellij"
     end
 
-    if conf[ft] == nil then
+    if not conf[ft] then
         error("\nFiletype not supported!! It can be added in init.lua.\n", vim.log.levels.ERROR)
     end
 
     if conf.save then
         vim.cmd("w")
     end
-    return ft, mp, args or ""
+    return ft, mp
 end
 
 local warn = false
@@ -165,11 +165,11 @@ local function multiplexer_new_pane(ft, mp, interactive)
     end
 
     local repl = ""
-    if interactive then
-        repl = conf[ft].interactive.repl
+    if conf[ft] then
+        repl = conf[ft].interactive.repl or ""
     end
 
-    if conf[ft].interactive.in_shell then
+    if interactive and conf[ft].interactive.in_shell then
         vim.fn.system(new_pane)
         vim.fn.system(string.format(multiplexer_commands.send_keys[mp], repl))
     else
@@ -239,20 +239,19 @@ local function multiplexer_interactive(filetype, multiplexer, args)
 end
 
 M.open_shell = function()
-    local ft = vim.bo.filetype
     if conf.prefer_tmux and os.getenv("TMUX") then
-        local mp      = "tmux"
+        local mp = "tmux"
         local sh_pane = multiplexer_list_grep(mp, "sh")
-        open_multiplexer(ft, mp, sh_pane, false)
+        open_multiplexer(nil, mp, sh_pane, false)
     else
-        open_builtin(ft, false)
+        open_builtin(nil, false)
     end
 end
 
 M.open_repl = function()
-    local ft = vim.bo.filetype
+    local ft, mp = init()
+
     if conf.prefer_tmux and os.getenv("TMUX") then
-        local mp        = "tmux"
         local repl_pane = multiplexer_list_grep(mp, conf[ft].interactive.title)
         open_multiplexer(ft, mp, repl_pane, true)
     else
@@ -261,37 +260,35 @@ M.open_repl = function()
 end
 
 M.run_shell = function(args)
-    local filetype
-    local multiplexer
-    filetype, multiplexer, args = init(args)
+    args = args or ""
+    local ft, mp = init()
 
-    if conf[filetype].shell.cmd == nil then
-        vim.notify("Filetype '" .. filetype .. "' has no shell command!!\nAdd it in init.lua.", vim.log.levels.ERROR)
+    if conf[ft].shell.cmd == nil then
+        vim.notify("Filetype '" .. ft .. "' has no shell command!!\nAdd it in init.lua.", vim.log.levels.ERROR)
         return
     end
 
-    if conf.prefer_tmux and multiplexer then
-        multiplexer_shell(filetype, multiplexer, args)
+    if conf.prefer_tmux and mp then
+        multiplexer_shell(ft, mp, args)
     else
-        builtin_shell(filetype, args)
+        builtin_shell(ft, args)
     end
 end
 
 M.run_interactive = function(args)
-    local filetype
-    local multiplexer
-    filetype, multiplexer, args = init(args)
+    args = args or ""
+    local ft, mp = init()
 
-    if conf[filetype].interactive.repl == nil then
-        vim.notify("Filetype '" .. filetype .. "' has no repl!!\nIf it should, add it in init.lua.", vim.log.levels
+    if conf[ft].interactive.repl == nil then
+        vim.notify("Filetype '" .. ft .. "' has no repl!!\nIf it should, add it in init.lua.", vim.log.levels
             .ERROR)
         return
     end
 
-    if conf.prefer_tmux and multiplexer then
-        multiplexer_interactive(filetype, multiplexer, args)
+    if conf.prefer_tmux and mp then
+        multiplexer_interactive(ft, mp, args)
     else
-        builtin_interactive(filetype, args)
+        builtin_interactive(ft, args)
     end
 end
 
