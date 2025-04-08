@@ -57,7 +57,7 @@ return {
             repl = "ipython",
             title = "python",
             cmd = "%run %f",
-            in_shell = nil
+            in_shell = false
         }
     },
     sh = {

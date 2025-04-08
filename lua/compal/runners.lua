@@ -164,16 +164,17 @@ local function multiplexer_new_pane(ft, mp, interactive)
         new_pane = conf.split or conf.tmux_split
     end
 
-    local repl = ""
-    if conf[ft] then
+    if interactive and conf[ft] then
+        local repl = ""
         repl = conf[ft].interactive.repl or ""
-    end
-
-    if interactive and conf[ft].interactive.in_shell then
-        vim.fn.system(new_pane)
-        vim.fn.system(string.format(multiplexer_commands.send_keys[mp], repl))
+        if conf[ft].interactive.in_shell then
+            vim.fn.system(new_pane)
+            vim.fn.system(string.format(multiplexer_commands.send_keys[mp], repl))
+        else
+            vim.fn.system(new_pane .. " " .. repl)
+        end
     else
-        vim.fn.system(new_pane .. " " .. repl)
+        vim.fn.system(new_pane)
     end
 end
 
